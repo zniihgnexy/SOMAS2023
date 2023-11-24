@@ -43,7 +43,9 @@ func (agent *team4Agent) decideTargetLootBox(lootBoxes map[uuid.UUID]objects.ILo
 func (agent *team4Agent) decideForces() {
 	var distance float64
 	energyLevel := agent.GetEnergyLevel()
-	currentPedalForce := rand.Float64() * energyLevel
+
+	//decide the pedal force based on our logic
+	currentPedalForce := energyLevel / distance
 	agentPosition := agent.GetLocation()
 
 	// Find the nearest lootbox of the same color as the agent
