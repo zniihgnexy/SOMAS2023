@@ -46,15 +46,17 @@ func NewHonestyMatrix() *HonestyMatrix {
 	}
 }
 
-// NewHonestyMatrixWithAllOnes creates a new HonestyMatrix with all honesty probabilities set to 1 for a given set of agents this is missing below
-// func NewHonestyMatrixWithAllOnes() *HonestyMatrix {
+// InitHonestyMatrixWithAllOnes creates a new HonestyMatrix with all honesty probabilities set to 1 for a given set of agents this is missing below
+// func InitHonestyMatrixWithAllOnes() *HonestyMatrix {
 // 	matrix := NewHonestyMatrix() //initialise new empty HonestyMatrix
 
 // 	agentIDs := []uuid.UUID{ /* Add relevant agent IDs */ }
 
+// 	initHonestyValue := 1.0 //Set initial honesty value
+
 // 	for _, agentID := range agentIDs {
 // 		matrix.Records[agentID] = append(matrix.Records[agentID], HonestyRecord{
-// 			HonestyProbability: 1.0,
+// 			HonestyProbability: initHonestyValue,
 // 			Context:            "initial",
 // 		})
 // 	}
