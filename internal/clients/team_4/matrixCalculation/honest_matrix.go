@@ -16,6 +16,8 @@ update points:
 	with itself, then telling a lie. if kickout a same color agent, then telling a lie.
 	if kickout a same oclor then tell a lie (not a good leader)
 
+	forces:
+
 */
 
 package matrixCalculation

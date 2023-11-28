@@ -31,16 +31,24 @@ func (agent *BaselineAgent) DecideAction() objects.BikerAction {
 func (agent *BaselineAgent) DecideForces(direction uuid.UUID) {
 	energyLevel := agent.GetEnergyLevel() // 当前能量
 
+	randomBreakForce := float64(0)
 	randomPedalForce := rand.Float64() * energyLevel // 使用 rand 包生成随机的 pedal 力量，可以根据需要调整范围
+
+	if randomPedalForce == 0 {
+		// just random break force based on energy level, but not too much
+		randomBreakForce += rand.Float64() * energyLevel * 0.5
+	} else {
+		randomBreakForce = 0
+	}
 
 	// 因为force是一个struct,包括pedal, brake,和turning，因此需要一起定义，不能够只有pedal
 	forces := utils.Forces{
 		Pedal: randomPedalForce,
-		Brake: 0.0, // 这里默认刹车为 0
+		Brake: randomBreakForce, // random for now
 		Turning: utils.TurningDecision{
 			SteerBike:     true,
 			SteeringForce: physics.ComputeOrientation(agent.GetLocation(), agent.GetGameState().GetMegaBikes()[direction].GetPosition()) - agent.GetGameState().GetMegaBikes()[agent.currentBike.GetID()].GetOrientation(),
-		}, // 这里默认转向为 0
+		},
 	}
 
 	agent.SetForces(forces)
@@ -94,7 +102,18 @@ func (agent *BaselineAgent) decideTargetLootBox(lootBoxes map[uuid.UUID]objects.
 	for _, lootbox := range lootBoxes { //遍历每一个lootbox
 		lootboxLocation := lootbox.GetPosition()
 		distance := physics.ComputeDistance(agentLocation, lootboxLocation)
-
+		// try to calculate if now the energy is low
+		/*
+			if agent.GetEnergyLevel() < originalEnergy * 0.1{
+				if distance < shortestDistance && agent.GetColour() == lootbox.GetColour(){
+					shortestDistance = distance
+					agent.targetLootBox = lootbox
+				}
+			}else if distance < shortestDistance {
+				shortestDistance = distance
+				agent.targetLootBox = lootbox
+			}
+		*/
 		if distance < shortestDistance {
 			shortestDistance = distance
 			agent.targetLootBox = lootbox
@@ -121,6 +140,8 @@ func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootB
 func (agent *BaselineAgent) rankAgentsReputation(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error) {
 	rank := make(map[uuid.UUID]float64)
 	for i, agent := range agentsOnBike {
+		//getReputationMatrix()
+		//choose the highest one
 		rank[agent.GetID()] = float64(i)
 	}
 	return rank, nil
