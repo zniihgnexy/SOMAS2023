@@ -18,7 +18,7 @@ update points:
 
 */
 
-package team4
+package matrixCalculation
 
 import (
 	"github.com/google/uuid"
@@ -71,3 +71,10 @@ func (hm *HonestyMatrix) CalculateHonestyBasedOnActions(agentID uuid.UUID, actio
 	hm.UpdateHonesty(agentID, newHonestyValue, "Description of the context")
 }
 */
+
+// CalculateHonestyBasedOnActions updates the honesty based on the agent's actions.
+func (hm *HonestyMatrix) CalculateHonestyBasedOnActions(agentID uuid.UUID, actionData ActionData) {
+	// logic to calculate new honesty value based on actionData
+	newHonestyValue := 0.0 // Calculate based on actionData
+	hm.UpdateHonesty(agentID, newHonestyValue, "Action-based Honesty Update")
+}

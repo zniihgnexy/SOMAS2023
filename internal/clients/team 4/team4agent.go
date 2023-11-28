@@ -5,7 +5,7 @@ import (
 	"SOMAS2023/internal/common/physics"
 	"SOMAS2023/internal/common/utils"
 	"math"
-	"math/rand"
+
 	"sort"
 
 	"github.com/google/uuid"
@@ -202,3 +202,20 @@ func (agent *team4Agent) rankReputation(agentsOnBike []objects.BaseBiker) (map[u
 	}
 	return rank, nil
 }
+
+/*
+// An example method where you might want to calculate honesty
+func (agent *team4Agent) SomeDecisionMethod() {
+	actionData := matrixCalculation.ActionData{
+		// Populate with relevant data for actionData
+	}
+
+	// Assuming you have an instance of HonestyMatrix available,
+	// you could also consider having a single instance that's passed around or referenced
+	honestyMatrix := matrixCalculation.NewHonestyMatrix()
+	honestyMatrix.CalculateHonestyBasedOnActions(agent.GetID(), actionData)
+
+	// Optionally, access updated honesty records if needed
+	honestyRecords := honestyMatrix.GetRecords(agent.GetID())
+}
+*/
