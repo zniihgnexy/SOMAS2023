@@ -1,4 +1,7 @@
 # SOMAS 2023
+## Works Here
+
+Codes will be upload here once they have been validfied. In this MD file, we will outline our finalized idea.
 
 ## Official Documents
 - [Rules and Implentation](./docs/Rules%20and%20Implentation.md)
