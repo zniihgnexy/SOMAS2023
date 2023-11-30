@@ -6,13 +6,13 @@ In this section, we will introduce a matrix based on a reputation matrix to guid
 
 In the system, there will be n agents. For an agent named 'Monkey,' its reputation matrix is considered as one of its attributes. This can be denoted as $R_{\text{Monkey}}$ or simply referred to as $R_{i}$.
 
-$$R_{i}=[r1, r2, ..., ri=1, ..., rn]
+$$R_{i}=[r1, r2, ..., ri=1, ..., rn]$$
 
 ## Reputation Update Rule
 
 The reputation update from agent \(i\) to agent \(j\) can be expressed using the following formula:
 
-$$ R(i, j)_{\text{new}} = \alpha \cdot R(i, j)_{\text{old}} + \beta \cdot \text{Feedback}(i, j) 
+$$ R(i, j)_{\text{new}} = \alpha \cdot R(i, j)_{\text{old}} + \beta \cdot \text{Feedback}(i, j) $$
 
 where \(\alpha\) is the decay factor, used to diminish the impact of past reputations, and \(\beta\) is the learning rate, adjusting the influence of new feedback on reputation. The function Feedback(i, j) represents feedback obtained from the environment or other agents regarding the interaction between \(i\) and \(j\).
 
