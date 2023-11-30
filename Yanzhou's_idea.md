@@ -34,9 +34,3 @@ When considering cooperation with agent \(j\), agent \(i\) can use the following
 
 This value ranges from 0 to 1, indicating the likelihood of cooperation. A higher trust level results in a value closer to 1, indicating a higher likelihood of cooperation.
 
-
-智能体 \(i\) 在考虑与智能体 \(j\) 合作时，可以使用以下规则：
-
-\[ \text{Cooperate}(i, j) = \frac{T(i, j)}{T(i, j) + D(i, j)} \]
-
-这个值在 [0, 1] 范围内，表示合作的可能性。信任度越高，这个值越接近 1，合作的可能性越大。
