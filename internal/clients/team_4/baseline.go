@@ -4,10 +4,8 @@ import (
 	"SOMAS2023/internal/common/objects"
 	"SOMAS2023/internal/common/physics"
 	"SOMAS2023/internal/common/utils"
-	"SOMAS2023/internal/common/voting"
-	"math"
+	"fmt"
 	"math/rand"
-	"sort"
 
 	"github.com/google/uuid"
 )
@@ -18,13 +16,15 @@ type IBaselineAgent interface {
 
 type BaselineAgent struct {
 	objects.BaseBiker
-	currentBike   *objects.MegaBike
-	targetLootBox objects.ILootBox
+	currentBike *objects.MegaBike
+	// targetLootBox objects.ILootBox
 }
 
 // DecideAction only pedal
 func (agent *BaselineAgent) DecideAction() objects.BikerAction {
+	fmt.Println("BaselineAgent Created TEAM 4 !!!")
 	return objects.Pedal
+
 }
 
 // DecideForces randomly based on current energyLevel
@@ -63,86 +63,111 @@ func (agent *BaselineAgent) DecideJoining(pendingAgents []uuid.UUID) map[uuid.UU
 	return decision
 }
 
-func (agent *BaselineAgent) ProposeDirection() utils.Coordinates {
-	e := agent.decideTargetLootBox(agent.GetGameState().GetLootBoxes())
-	if e != nil {
-		panic("unexpected error!")
-	}
-	return agent.targetLootBox.GetPosition()
-}
+// func (agent *BaselineAgent) GetLocation() utils.Coordinates {
+// 	e := agent.decideTargetLootBox(agent.GetGameState().GetLootBoxes())
+// 	if e != nil {
+// 		panic("unexpected error!")
+// 	}
+// 	return agent.targetLootBox.GetPosition()
+// }
 
-func (agent *BaselineAgent) FinalDirectionVote(proposals []uuid.UUID) voting.LootboxVoteMap {
-	boxesInMap := agent.GetGameState().GetLootBoxes()
-	boxProposed := make([]objects.ILootBox, len(proposals))
-	for i, pp := range proposals {
-		boxProposed[i] = boxesInMap[pp]
-	}
-	rank, e := agent.rankTargetProposals(boxProposed)
-	if e != nil {
-		panic("unexpected error!")
-	}
-	return rank
-}
+// func (agent *BaselineAgent) FinalDirectionVote(proposals []uuid.UUID) voting.LootboxVoteMap {
+// 	boxesInMap := agent.GetGameState().GetLootBoxes()
+// 	boxProposed := make([]objects.ILootBox, len(proposals))
+// 	for i, pp := range proposals {
+// 		boxProposed[i] = boxesInMap[pp]
+// 	}
+// 	rank, e := agent.rankTargetProposals(boxProposed)
+// 	if e != nil {
+// 		panic("unexpected error!")
+// 	}
+// 	return rank
+// }
 
-func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
-	currentBike := agent.GetGameState().GetMegaBikes()[agent.currentBike.GetID()]
-	rank, e := agent.rankAgentsReputation(currentBike.GetAgents())
-	if e != nil {
-		panic("unexpected error!")
-	}
-	return rank
-}
+// func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
+// 	currentBike := agent.GetGameState().GetMegaBikes()[agent.currentBike.GetID()]
+// 	rank, e := agent.rankAgentsReputation(currentBike.GetAgents())
+// 	if e != nil {
+// 		panic("unexpected error!")
+// 	}
+// 	return rank
+// }
 
-// decideTargetLootBox find closest lootBox
-func (agent *BaselineAgent) decideTargetLootBox(lootBoxes map[uuid.UUID]objects.ILootBox) error {
+// // decideTargetLootBox find closest lootBox
+// func (agent *BaselineAgent) decideTargetLootBox(lootBoxes map[uuid.UUID]objects.ILootBox) error {
 
-	agentLocation := agent.GetLocation() //agent location
-	shortestDistance := math.MaxFloat64  //最短距离一开始设置为正无穷
+// 	agentLocation := agent.GetLocation() //agent location
+// 	shortestDistance := math.MaxFloat64  //最短距离一开始设置为正无穷
 
-	for _, lootbox := range lootBoxes { //遍历每一个lootbox
-		lootboxLocation := lootbox.GetPosition()
-		distance := physics.ComputeDistance(agentLocation, lootboxLocation)
-		// try to calculate if now the energy is low
-		/*
-			if agent.GetEnergyLevel() < originalEnergy * 0.1{
-				if distance < shortestDistance && agent.GetColour() == lootbox.GetColour(){
-					shortestDistance = distance
-					agent.targetLootBox = lootbox
-				}
-			}else if distance < shortestDistance {
-				shortestDistance = distance
-				agent.targetLootBox = lootbox
-			}
-		*/
-		if distance < shortestDistance {
-			shortestDistance = distance
-			agent.targetLootBox = lootbox
-		}
-	}
-	return nil
-}
+// 	for _, lootbox := range lootBoxes { //遍历每一个lootbox
+// 		lootboxLocation := lootbox.GetPosition()
+// 		distance := physics.ComputeDistance(agentLocation, lootboxLocation)
+// 		// try to calculate if now the energy is low
+// 		/*
+// 			if agent.GetEnergyLevel() < originalEnergy * 0.1{
+// 				if distance < shortestDistance && agent.GetColour() == lootbox.GetColour(){
+// 					shortestDistance = distance
+// 					agent.targetLootBox = lootbox
+// 				}
+// 			}else if distance < shortestDistance {
+// 				shortestDistance = distance
+// 				agent.targetLootBox = lootbox
+// 			}
+// 		*/
+// 		if distance < shortestDistance {
+// 			shortestDistance = distance
+// 			agent.targetLootBox = lootbox
+// 		}
+// 	}
+// 	return nil
+// }
 
-// rankTargetProposals rank by distance
-func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootBox) (map[uuid.UUID]float64, error) {
-	currentBike := agent.GetGameState().GetMegaBikes()[agent.currentBike.GetID()]
-	// sort lootBox by distance
-	sort.Slice(proposedLootBox, func(i, j int) bool {
-		return physics.ComputeDistance(currentBike.GetPosition(), proposedLootBox[i].GetPosition()) < physics.ComputeDistance(currentBike.GetPosition(), proposedLootBox[j].GetPosition())
-	})
-	rank := make(map[uuid.UUID]float64)
-	for i, lootBox := range proposedLootBox {
-		rank[lootBox.GetID()] = float64(i)
-	}
-	return rank, nil
-}
+// // rankTargetProposals rank by distance
+// func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootBox) (map[uuid.UUID]float64, error) {
+// 	currentBike := agent.GetGameState().GetMegaBikes()[agent.currentBike.GetID()]
+// 	// sort lootBox by distance
+// 	sort.Slice(proposedLootBox, func(i, j int) bool {
+// 		return physics.ComputeDistance(currentBike.GetPosition(), proposedLootBox[i].GetPosition()) < physics.ComputeDistance(currentBike.GetPosition(), proposedLootBox[j].GetPosition())
+// 	})
+// 	rank := make(map[uuid.UUID]float64)
+// 	for i, lootBox := range proposedLootBox {
+// 		rank[lootBox.GetID()] = float64(i)
+// 	}
+// 	return rank, nil
+// }
 
-// rankAgentReputation randomly rank agents
-func (agent *BaselineAgent) rankAgentsReputation(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error) {
-	rank := make(map[uuid.UUID]float64)
-	for i, agent := range agentsOnBike {
-		//getReputationMatrix()
-		//choose the highest one
-		rank[agent.GetID()] = float64(i)
-	}
-	return rank, nil
-}
+// // rankAgentReputation randomly rank agents
+// func (agent *BaselineAgent) rankAgentsReputation(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error) {
+// 	rank := make(map[uuid.UUID]float64)
+// 	for i, agent := range agentsOnBike {
+// 		//getReputationMatrix()
+// 		//choose the highest one
+// 		rank[agent.GetID()] = float64(i)
+// 	}
+// 	return rank, nil
+// }
+
+// func (agent *BaselineAgent) GetFellowBikers() []IBaselineAgent {
+// 	fellowBikers := agent.GetGameState().GetMegaBikes()[agent.currentBike.GetID()].GetAgents()
+
+// 	// Convert []objects.IBaseBiker to []IBaselineAgent
+// 	bikers := make([]IBaselineAgent, len(fellowBikers))
+// 	for i, biker := range fellowBikers {
+// 		bikers[i] = biker.(IBaselineAgent)
+// 	}
+// 	fmt.Println(bikers)
+// 	return bikers
+// }
+
+// func (agent *BaselineAgent) GetVotes() voting.IdVoteMap {
+// 	votes := make(voting.IdVoteMap)
+// 	fellowBikers := agent.GetFellowBikers()
+// 	for i, fellowBiker := range fellowBikers {
+// 		if i == 0 {
+// 			votes[fellowBiker.GetID()] = 1.0
+// 		} else {
+// 			votes[fellowBiker.GetID()] = 0.0
+// 		}
+// 	}
+// 	return votes
+// }

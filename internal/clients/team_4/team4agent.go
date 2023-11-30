@@ -40,46 +40,46 @@ func (agent *team4Agent) decideTargetLootBox(lootBoxes map[uuid.UUID]objects.ILo
 	return nearestLootbox, nil
 }
 
-func (agent *team4Agent) decideForces() {
-	var distance float64
-	energyLevel := agent.GetEnergyLevel()
+// func (agent *team4Agent) decideForces() {
+// 	var distance float64
+// 	energyLevel := agent.GetEnergyLevel()
 
-	//decide the pedal force based on our logic
-	currentPedalForce := energyLevel / distance
-	agentPosition := agent.GetLocation()
+// 	//decide the pedal force based on our logic
+// 	currentPedalForce := energyLevel / distance
+// 	agentPosition := agent.GetLocation()
 
-	// Find the nearest lootbox of the same color as the agent
-	nearestLootBox, err := agent.decideTargetLootBox(agent.GameState.GetLootBoxes())
-	if err != nil || nearestLootBox == nil {
-		panic("unexpected error!")
-	}
+// 	// Find the nearest lootbox of the same color as the agent
+// 	nearestLootBox, err := agent.decideTargetLootBox(agent.GameState.GetLootBoxes())
+// 	if err != nil || nearestLootBox == nil {
+// 		panic("unexpected error!")
+// 	}
 
-	lootBoxPosition := nearestLootBox.GetPosition()
+// 	lootBoxPosition := nearestLootBox.GetPosition()
 
-	distance = physics.ComputeDistance(agentPosition, lootBoxPosition)
+// 	distance = physics.ComputeDistance(agentPosition, lootBoxPosition)
 
-	forces := utils.Forces{
-		Pedal: currentPedalForce,
-		Brake: 0.0, // 这里默认刹车为 0
-		//Turning: 0.0, // 这里默认转向为 0 // 不知道还有没有这一部分strreing的问题
-	}
+// 	forces := utils.Forces{
+// 		Pedal: currentPedalForce,
+// 		Brake: 0.0, // 这里默认刹车为 0
+// 		//Turning: 0.0, // 这里默认转向为 0 // 不知道还有没有这一部分strreing的问题
+// 	}
 
-	// Calculate the distance to the nearest lootbox
+// 	// Calculate the distance to the nearest lootbox
 
-	// Set the turning angle based on the distance
-	//var turningAngle float64
-	//不知道能不能或的距离，到时候再看能不拿到决定的
+// 	// Set the turning angle based on the distance
+// 	//var turningAngle float64
+// 	//不知道能不能或的距离，到时候再看能不拿到决定的
 
-	//if distance > 10 {
-	//	turningAngle = computeTurningAngle(agentPosition, lootBoxPosition)
-	//} else {
-	//	turningAngle = 0.0
-	//}
+// 	//if distance > 10 {
+// 	//	turningAngle = computeTurningAngle(agentPosition, lootBoxPosition)
+// 	//} else {
+// 	//	turningAngle = 0.0
+// 	//}
 
-	//agent.SetForces(forces)
-	//没找到在哪写，估计还没这个函数呢
-	println("forces for each round", forces)
-}
+// 	//agent.SetForces(forces)
+// 	//没找到在哪写，估计还没这个函数呢
+// 	fmt.println("forces for each round", forces)
+// }
 
 func computeTurningAngle(agentPosition, lootBoxPosition utils.Coordinates) float64 {
 	deltaX := lootBoxPosition.X - agentPosition.X
