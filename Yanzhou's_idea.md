@@ -20,7 +20,7 @@ where \(\alpha\) is the decay factor, used to diminish the impact of past reputa
 
 Trust and distrust can be updated with the following formulas:
 
-\[ T(i, j)_{\text{new}} = \gamma \cdot T(i, j)_{\text{old}} + \delta \cdot \text{GoodBehavior}(i, j) \]
+$$ T(i, j)_{\text{new}} = \gamma \cdot T(i, j)_{\text{old}} + \delta \cdot \text{GoodBehavior}(i, j)$$
 
 \[ D(i, j)_{\text{new}} = \rho \cdot D(i, j)_{\text{old}} + \sigma \cdot \text{BadBehavior}(i, j) \]
 
