@@ -11,9 +11,9 @@ $$R_{i}=[r1, r2, ..., ri=1, ..., rn]$$
 ## Reputation Update Rule
 
 The reputation update from agent \(i\) to agent \(j\) can be expressed using the following formula:
-
-$$ R(i, j)_{\text{new}} = \alpha \cdot R(i, j)_{\text{old}} + \beta \cdot \text{Feedback}(i, j) $$
-
+```math
+R(i, j)_{\text{new}} = \alpha \cdot R(i, j)_{\text{old}} + \beta \cdot \text{Feedback}(i, j)
+```
 where \(\alpha\) is the decay factor, used to diminish the impact of past reputations, and \(\beta\) is the learning rate, adjusting the influence of new feedback on reputation. The function Feedback(i, j) represents feedback obtained from the environment or other agents regarding the interaction between \(i\) and \(j\).
 
 ## Trust and Distrust Update Rules
