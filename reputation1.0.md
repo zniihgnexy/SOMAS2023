@@ -43,7 +43,7 @@ Citation to the slide(s) where the concept is explained
 
 Define Benefit rate:
 
-$$ B_{i,t}=p_k-\frac{1}{n-1}\sum_{k=1,~k\neq i}^n p_k $$ 
+$$ B_{i,t}=p_i-\frac{1}{n-1}\sum_{k=1,~k\neq i}^n p_k $$ 
 
 $B_{i,t}$ negative value when agent i is a freerider,vv.
 
