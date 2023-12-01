@@ -11,56 +11,49 @@ More importantly, the reputation mechanism truly provides an incentive for agent
 
 ### 1. Track Energy Usage per Turn
 
-For each agent $i$, track the amount of energy they use in each turn $t$. Let $E_{i,t}$ denote the energy used by agent $i$ in turn $t$.
+For each agent $i$, record the energy they use in each turn $t$, denoted as $E_{i,t}$.
 
 ### 2. Account for Abandoning a Bike
 
-Introduce a binary variable $A_{i,t}$ for each agent $i$ and turn $t$, which is 1 if the agent left a bike in that turn, and 0 otherwise.
+For each agent $i$ in each turn $t$, have a binary indicator $A_{i,t}$ that is 1 if the agent left a bike in that turn, and 0 otherwise.
 
-### 3. Calculate a Base Reputation Score
+### 3. Measure Distance to Loot Boxes
 
-The base reputation score $R_{i,t}$ now considers both energy use and the act of abandoning a bike. It can be calculated as:
+For each agent $i$ in a leadership position at turn $t$, measure the distance from their chosen loot box to the closest loot box, denoted as $D_{i,t}$. This will reflect the leader's decision-making with respect to team benefit versus personal gain.
 
-$$ R_{i,t} = (1 - \frac{E_{i,t}}{\max(E_{1,t}, E_{2,t}, ..., E_{N,t})}) \times (1 - \beta \times A_{i,t}) $$
+### 4. Calculate a Base Reputation Score
 
-Here, $\beta$ is the weight given to the act of abandoning a bike, reflecting its impact on the reputation.
+Calculate the base reputation score $R_{i,t}$ considering energy use, bike abandonment, and decision-making regarding loot box choice. The score can be calculated as:
 
-### 4. Initialize the Reputation Matrix
+$$ R_{i,t} = \left(1 - \frac{E_{i,t}}{\max(E_{1,t}, E_{2,t}, ..., E_{N,t})}\right) \times \left(1 - \beta \times A_{i,t}\right) \times \left(1 - \gamma \times \frac{D_{i,t}}{D_{\text{closest},t}}\right) $$
 
-Initialize the $N \times N$ matrix $M$ where $N$ is the total number of agents. Initially, all off-diagonal values are set to a mid-point (e.g., 0.5) and the diagonal values (self-reputation) to 1.
+Here, $\beta$ is the weight given to the act of abandoning a bike, $\gamma$ is the weight given to the penalty for directing towards a suboptimal loot box, and $D_{\text{closest},t}$ is the distance to the closest loot box.
 
-$$ M_{initial} = \begin{bmatrix}
-1 & 0.5 & ... & 0.5 \\
-0.5 & 1 & ... & 0.5 \\
-... & ... & ... & ... \\
-0.5 & 0.5 & ... & 1
-\end{bmatrix} $$
+### 5. Initialize the Reputation Vector
 
-### 5. Update the Matrix After Each Turn
+Initialize the reputation vector $R$ with a length of $N$, where $N$ is the total number of agents. Initially, all values can be set to a neutral value, such as 0.5.
 
-The update rule now also considers $A_{i,t}$. Update the matrix based on the new energy usage data and the act of leaving a bike. The update rule for element $M_{i,j}$ in the matrix can be:
+$$ R_{initial} = [0.5, 0.5, ..., 0.5] $$
 
-$$
-M_{i,j,t+1} =
-\begin{cases}
-M_{i,j,t} \cdot (1 + \alpha \cdot (R_{j,t} - 0.5)) & \text{if } i \neq j \\
-1 & \text{if } i = j
-\end{cases}
-$$
+### 6. Update the Vector After Each Turn
 
-Here, $\alpha$ is a factor determining how much the reputation changes per turn.
+After each turn, update the vector based on the new data. The update for agent $i$'s reputation can be:
 
-### 6. Incorporate a Decay Factor
+$$ R_{i,t+1} = R_{i,t} \cdot \left(1 + \alpha \cdot (R_{i,t} - 0.5)\right) - \lambda \cdot A_{i,t} - \xi \cdot \frac{D_{i,t}}{D_{\text{closest},t}} $$
 
-Apply the decay factor $\delta$ to ensure that the impact of an agent's actions on their reputation diminishes over time:
+Here, $\alpha$ is a factor determining how much the reputation changes due to energy consumption, $\lambda$ is the penalty for abandoning a bike, and $\xi$ is the penalty for directing the megabike towards a suboptimal loot box.
 
-$$ M_{i,j,t+1} = \delta \cdot M_{i,j,t+1} + (1 - \delta) \cdot M_{i,j,t} $$
+### 7. Apply Decay Factor and Normalize
 
-### 7. Normalization and Adjustment
+Apply a decay factor $\delta$ to account for the diminishing influence of past actions:
 
-Normalize the matrix after each update to ensure that the reputation scores are comparable across agents and turns:
+$$ R_{i,t+1} = \delta \cdot R_{i,t+1} + (1 - \delta) \cdot R_{i,t} $$
 
-$$ M_{i,j,t+1} = \frac{M_{i,j,t+1}}{\sum_{k=1}^{N} M_{i,k,t+1}} $$
+Normalize the reputation vector so that the sum of all reputations equals 1:
+
+$$ R_{i,t+1} = \frac{R_{i,t+1}}{\sum_{j=1}^{N} R_{j,t+1}} $$
+
+The resulting reputation vector $R_{t+1}$ provides a comprehensive score for each agent, taking into account their energy contribution, their loyalty to the team in terms of bike abandonment, and their leadership in directing the megabike towards loot boxes in a way that reflects collective benefit.
 
 *Considerations:*
 - This model assumes a direct correlation between energy usage and positive contribution, which might need adjustments based on game dynamics.
