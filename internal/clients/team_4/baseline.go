@@ -79,14 +79,14 @@ func (agent *BaselineAgent) FinalDirectionVote(proposals []uuid.UUID) voting.Loo
 }
 
 // breaks code
-func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
-	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
-	rank, e := agent.rankAgentsReputation(currentBike.GetAgents())
-	if e != nil {
-		panic("unexpected error!")
-	}
-	return rank
-}
+// func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
+// 	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
+// 	rank, e := agent.rankAgentsReputation(currentBike.GetAgents())
+// 	if e != nil {
+// 		panic("unexpected error!")
+// 	}
+// 	return rank
+// }
 
 // rankTargetProposals rank by distance
 func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootBox) (map[uuid.UUID]float64, error) {
@@ -134,4 +134,17 @@ func (agent *BaselineAgent) rankAgentsReputation(agentsOnBike []objects.IBaseBik
 		rank[agent.GetID()] = float64(i)
 	}
 	return rank, nil
+}
+
+func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
+	rank := make(map[utils.Governance]float64)
+	rank[utils.Democracy] = 1
+	rank[utils.Leadership] = 0
+	rank[utils.Dictatorship] = 0
+	rank[utils.Invalid] = 0
+	//for i := utils.Democracy; i <= utils.Invalid; i++ {
+	//  rank[i] = 0.25
+	//}
+	fmt.Println(rank)
+	return rank
 }
