@@ -33,9 +33,8 @@ Define Utility:
 
 $$ U_{i,t} = \frac{a}{n} \sum_{j=1}^n p_j + b(E_{i,t-1} - p_i)$$ 
 
-Overall utility function conception 
 Where a>b and $\frac{a}{n} < b$. a,b are both parameters, p and E defined previously. 
-If agent is a freerider, $p_i=0$, this might be a large value, vv. It needs to be **normlized** into 0-1 values.
+This part is introduced in lectrue 06, P07. According to my comprehension, if agent is a freerider, $p_i=0$, this might be a large value, vv. It needs to be **normlized** into 0-1 values.
 
 
 Parameters and where to get input values
