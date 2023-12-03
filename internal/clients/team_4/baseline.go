@@ -153,6 +153,7 @@ func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootB
 			// Calculate the honesty value for the agent in the message
 			//honestyValue := GetHonestyValue(m.AgentId)
 			if m.AgentId == agent.GetID() {
+				//example, if our agent is going to be kicked out, we don't like this one and reduce the reputation value
 				senderId := m.BaseMessage.GetSender()
 				// Decrease the sender's honesty by 0.05
 				GlobalHonestyMatrix.DecreaseHonesty(senderId.GetID(), 0.05)
