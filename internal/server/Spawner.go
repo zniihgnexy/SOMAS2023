@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const BikerAgentCount = 24
+const BikerAgentCount = 6
 
 func GetAgentGenerators() []baseserver.AgentGeneratorCountPair[objects.IBaseBiker] {
 	return []baseserver.AgentGeneratorCountPair[objects.IBaseBiker]{
@@ -22,9 +22,7 @@ func BikerAgentGenerator() objects.IBaseBiker {
 	// Create a new instance of BaselineAgent
 	baselineAgent := &team4.BaselineAgent{
 		BaseBiker: *objects.GetBaseBiker(utils.GenerateRandomColour(), uuid.New()),
-		// Initialize other necessary fields of BaselineAgent if there are any
 	}
-
 	// Return the baselineAgent as an IBaseBiker
 	return baselineAgent
 }
