@@ -188,7 +188,7 @@ func (agent *BaselineAgent) Reputation_loop() map[uuid.UUID]float64 {
 			// Monitor otherAgent's forces
 			forces := otherAgent.GetForces()
 			energyLevel := otherAgent.GetEnergyLevel()
-			ReputationForces := float64(forces.Pedal+forces.Brake+rand.Float64()) / energyLevel
+			ReputationForces := float64(forces.Pedal+forces.Brake+rand.Float64()) / energyLevel //CAUTION: REMOVE THE RANDOM VALUE
 			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Forces:", ReputationForces)
 
 			// Monitor otherAgent's bike status
