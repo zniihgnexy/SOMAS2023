@@ -16,11 +16,10 @@ import (
 type IBaselineAgent interface {
 	objects.IBaseBiker
 
-	//MISSING FUNCTIONS
+	//INCOMPLETE/NO STRATEGY FUNCTIONS
 	CalculateReputation( /*choose*/ ) map[uuid.UUID]float64    //calculate reputation matrix
 	CalculateHonestyMatrix( /*choose*/ ) map[uuid.UUID]float64 //calculate honesty matrix
 
-	//INCOMPLETE/NO STRATEGY FUNCTIONS
 	DecideAction() objects.BikerAction                         //determines what action the agent is going to take this round. (changeBike or Pedal)
 	DecideForce(direction uuid.UUID)                           //defines the vector you pass to the bike: [pedal, brake, turning]
 	DecideJoining(pendinAgents []uuid.UUID) map[uuid.UUID]bool //decide whether to accept or not accept bikers, ranks the ones
@@ -37,8 +36,7 @@ type IBaselineAgent interface {
 	//IMPLEMENTED FUNCTIONS
 	ProposeDirection() uuid.UUID                                    //returns the id of the desired lootbox
 	FinalDirectionVote(proposals []uuid.UUID) voting.LootboxVoteMap //returns rank of proposed lootboxes
-	//some parts commented - awaiting further implementation of reputation and honesty matrix
-	DecideAllocation() voting.IdVoteMap //decide the allocation parameters
+	DecideAllocation() voting.IdVoteMap                             //decide the allocation parameters
 
 	//HELPER FUNCTIONS
 	UpdateDecisionData() //updates all the data needed for the decision making process(call at the start of any decision making function)
@@ -48,6 +46,13 @@ type IBaselineAgent interface {
 
 	rankTargetProposals(proposedLootBox []objects.ILootBox) (map[uuid.UUID]float64, error) //returns ranking of the proposed lootboxes
 
+	IncreaseHonesty(agentID uuid.UUID, increaseAmount float64)
+	DecreaseHonesty(agentID uuid.UUID, decreaseAmount float64)
+
+	//PRINT FUNCTIONS
+	DisplayFellowsEnergyHistory()
+	DisplayFellowsHonesty()
+	DisplayFellowsReputation()
 }
 type BaselineAgent struct {
 	objects.BaseBiker
