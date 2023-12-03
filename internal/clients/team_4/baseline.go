@@ -8,10 +8,12 @@ import (
 	"fmt"
 
 	//"go/printer"
-	"math"
+
+	//"go/printer"
+	//"math"
 	"math/rand"
 	"sort"
-	"time"
+	//"time"
 
 	"github.com/google/uuid"
 )
@@ -79,8 +81,10 @@ func (agent *BaselineAgent) FinalDirectionVote(proposals []uuid.UUID) voting.Loo
 	if e != nil {
 		panic("unexpected error!")
 	}
-	agent.calc_Reputation_value(0.1, 0.5, 0.8)
-	//agent.Reputation_loop()
+	//calculate reputation matrix
+	reputationMap := agent.Reputation_loop()
+	// Print the reputation map
+	fmt.Println("Final Reputation Map:", reputationMap)
 	return rank
 }
 
@@ -145,128 +149,67 @@ func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
 }
 
 // ///////////////////////////////////////////////
-// Yanzhou's  Changes (the function is called in line 82)
-// ----> 82 agent.calc_Reputation_value(0.1, 0.5, 0.8)
-//
+// Yanzhou's  Changes 03/12/2023 (the function is called in line 84-87)
+// ----> 84 calculate reputation matrix
+// ----> 85 reputationMap := agent.Reputation_loop()
+// ----> 86 Print the reputation map
+// ----> 87 fmt.Println("Final Reputation Map:", reputationMap)
 // Description:
-// 1. it returns value of the reputation of a agent.
-// 2. it have to be tuned and normalized in the reputation matrix
-// 3. now, we can calculate the value of the reputation value, but cannot calculate the matrix because datatype issue.
+// 1. it returns the reputation matrix of a agent.
+// 2. it have to be tuned and normalized after the system finished
+// 3. it is easier than last version
 //
 // ISSUE:
-// 1. The 'calc_Reputation_value' function can only calculate values of "*BaselineAgent", can not work for "*IBaseBiker"
-// 2. To generate the reputation, we can enumerate all agents in the system, and calculate reputations for each of them
-//    But as I enumerate all agents, (in line 196) the varible otherAgent is "*IBaseBiker",
-//    it can only be called in the Gameloop.go, I have no access to it
-//    Thus, I don't think there is a way to calculate the reputation matrix in this file
+// 1. calculated reputation based on the value I can call. Need to be discuss further with @Mauro and tune properly befor submition.
 // ///////////////////////////////////////////////
 
-// /////////////////////////
-// func (agent *BaselineAgent) GetReputation() map[uuid.UUID]float64 {
-// 	reputation := make(map[uuid.UUID]float64)
-// 	print("1232132213123212312\n")
-// 	return reputation
-// }
 
-func (agent *BaselineAgent) leaving() float64 { //get input
-	rand.Seed(time.Now().UnixNano())
-	randomBit := float64(rand.Intn(2))
-	return randomBit
-}
+func (agent *BaselineAgent) Reputation_loop() map[uuid.UUID]float64 {
+	reputation := make(map[uuid.UUID]float64)
+	megaBikes := agent.GetGameState().GetMegaBikes()
 
-func (agent *BaselineAgent) energy_consumption() float64 {
-	// Generate a random energy consumption for the current loop
-	consumption := rand.Float64() * agent.GetEnergyLevel()
-	return consumption
-}
+	for _, bike := range megaBikes {
+		// Get all agents on MegaBike
+		fellowBikers := bike.GetAgents()
 
-func (agent *BaselineAgent) selected_Lootbox_distance() float64 {
-	// Randomly select a lootbox as the selected lootbox for the current loop
-	lootBoxes := agent.GetGameState().GetLootBoxes()
+		// Iterate over each agent on MegaBike, generate reputation assessment
+		for _, otherAgent := range fellowBikers {
+			// Exclude self
+			selfTest := otherAgent.GetID() //nolint
+			if selfTest == agent.GetID() {
+				reputation[otherAgent.GetID()] = 1.0
+			}
 
-	var distance float64
-	for _, lootBox := range lootBoxes {
-		// Implement specific logic here to calculate the distance between agent and LootBox
-		distance = physics.ComputeDistance(agent.GetLocation(), lootBox.GetPosition())
-		if rand.Float64() < 0.5 {
-			break
+			// Monitor otherAgent's location
+			// location := otherAgent.GetLocation()
+			// RAP := otherAgent.GetResourceAllocationParams()
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Location:", location, "ResourceAllocationParams:", RAP)
+
+			// Monitor otherAgent's forces
+			forces := otherAgent.GetForces()
+			energyLevel := otherAgent.GetEnergyLevel()
+			ReputationForces := float64(forces.Pedal+forces.Brake+rand.Float64()) / energyLevel
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Forces:", ReputationForces)
+
+			// Monitor otherAgent's bike status
+			bikeStatus := otherAgent.GetBikeStatus()
+			// Convert the boolean value to float64 and print the result
+			ReputationBikeShift := 0.2
+			if bikeStatus {
+				ReputationBikeShift = 1.0
+			}
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Bike_Shift", float64(ReputationBikeShift))
+
+			// Calculate Overall_reputation
+			OverallReputation := ReputationForces * ReputationBikeShift
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Overall Reputation:", OverallReputation)
+
+			// Store Overall_reputation in the reputation map
+			reputation[otherAgent.GetID()] = OverallReputation
 		}
 	}
-	return distance
-}
-
-// func (agent *BaselineAgent) Reputation_loop() map[uuid.UUID]float64 {
-// 	reputation := make(map[uuid.UUID]float64)
-// 	megaBikes := agent.GetGameState().GetMegaBikes()
-
-// 	for _, bike := range megaBikes {
-// 		// Get all agents on MegaBike
-// 		fellowBikers := bike.GetAgents()
-
-// 		// Iterate over each agent on MegaBike, generate reputation assessment
-// 		for _, otherAgent := range fellowBikers {
-// 			// Exclude self
-// 			test := otherAgent.GetID() //nolint
-// 			if test == agent.GetID() {
-// 				continue
-// 			}
-// 			otherAgent.GetReputation()
-
-// 		}
-// 	}
-// 	return reputation
-// }
-
-func (agent *BaselineAgent) calc_Reputation_value(b, c, d float64) float64 {
-	reputation_value := 0.0
-	// Get all LootBoxes on the field
-	lootBoxes := agent.GetGameState().GetLootBoxes()
-
-	// 1. Minimum distance and selected target value between agent and all LootBoxes
-	var minDistance float64 = math.Inf(1)
-	i := 0
-	for _, lootBox := range lootBoxes {
-		// Implement specific logic here to calculate the distance between agent and LootBox
-		distance := physics.ComputeDistance(agent.GetLocation(), lootBox.GetPosition())
-
-		// Check if it is a new minimum distance
-		if distance < minDistance {
-			minDistance = distance
-		}
-
-		// If the current loop index equals the specified index a, record the distance to the selected LootBox
-		i = i + 1
+	for agentID, agentReputation := range reputation {
+		print("Agent ID: ", agentID.String(), ", Reputation: ", agentReputation, "\n")
 	}
-
-	// Calculate distance_Reputation
-	distance_Reputation := 1 - (b * agent.selected_Lootbox_distance() / minDistance)
-
-	// Here you can use minDistance, selected_Lootdistance, and distance_Reputation for further logic
-	print("Agent " + agent.GetID().String() + " Reputation = \n")
-	print("distance_Reputation: \t", distance_Reputation)
-	print("\n")
-
-	// 2. EnergyLevel of the agent in this and the previous loop
-	// Get the current EnergyLevel
-	currentEnergyLevel := agent.GetEnergyLevel()
-	currentConsumption := agent.energy_consumption()
-
-	energy_Reputation := currentEnergyLevel - c*currentConsumption
-
-	print("energy_Reputation: \t", energy_Reputation)
-	print("\n")
-
-	// Get whether the agent leaves the bike this round 0 means no, 1 means yes
-	leave_value := agent.leaving()
-	Leave_Reputation := 1 - d*leave_value
-	print("Leave_Reputation: \t", Leave_Reputation)
-	print("\n")
-
-	///
-	///////////////
-	reputation_value = Leave_Reputation*energy_Reputation - distance_Reputation
-	print("reputation_value: \t", reputation_value)
-	print("\n")
-	print("\n")
-	return reputation_value
+	return reputation
 }
