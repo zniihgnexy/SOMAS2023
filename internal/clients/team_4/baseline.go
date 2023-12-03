@@ -413,11 +413,23 @@ func (agent *BaselineAgent) DecideForces(direction uuid.UUID) {
 	agent.SetForces(forces)
 }
 
-// DecideJoining accept all
 func (agent *BaselineAgent) DecideJoining(pendingAgents []uuid.UUID) map[uuid.UUID]bool {
+	agent.UpdateDecisionData()
 	decision := make(map[uuid.UUID]bool)
-	for _, agent := range pendingAgents {
-		decision[agent] = true
+	for _, pendingAgent := range pendingAgents {
+		// energyLog := agent.energyHistory[pendingAgent]
+		// energySpent := energyLog[len(energyLog)-2] - energyLog[len(energyLog)-1]
+		w1 := 0.5
+		w2 := 0.5
+		reputation := agent.reputation[pendingAgent]
+		honesty := agent.honestyMatrix[pendingAgent]
+		fmt.Println("asdsad", reputation, " ", honesty)
+		if (w1*reputation + w2*honesty) >= 0.55 {
+			decision[pendingAgent] = true
+		} else {
+			decision[pendingAgent] = false
+		}
+
 	}
 	return decision
 }
