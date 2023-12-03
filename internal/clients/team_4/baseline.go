@@ -28,7 +28,7 @@ type IBaselineAgent interface {
 	VoteForKickout() map[uuid.UUID]int
 
 	//CURRENTLY UNUSED/NOT CONSIDERED FUNCTIONS
-	DecideGovernance() voting.GovernanceVote //decide the governance system
+
 	VoteDictator() voting.IdVoteMap
 	VoteLeader() voting.IdVoteMap
 	DictateDirection() uuid.UUID //called only when the agent is the dictator
@@ -37,6 +37,7 @@ type IBaselineAgent interface {
 	//IMPLEMENTED FUNCTIONS
 	ProposeDirection() uuid.UUID                                    //returns the id of the desired lootbox
 	FinalDirectionVote(proposals []uuid.UUID) voting.LootboxVoteMap //returns rank of proposed lootboxes
+	DecideGovernance() voting.GovernanceVote                        //decide the governance system
 	//some parts commented - awaiting further implementation of reputation and honesty matrix
 	DecideAllocation() voting.IdVoteMap //decide the allocation parameters
 
@@ -329,13 +330,24 @@ func (agent *BaselineAgent) DecideJoining(pendingAgents []uuid.UUID) map[uuid.UU
 }
 
 func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
-	rank := make(map[utils.Governance]float64)
-	rank[utils.Democracy] = 1
-	rank[utils.Leadership] = 0
-	rank[utils.Dictatorship] = 0
-	rank[utils.Invalid] = 0
-	//for i := utils.Democracy; i <= utils.Invalid; i++ {
-	//  rank[i] = 0.25
-	//}
-	return rank
+	my_energy := agent.GetEnergyLevel()
+	governanceRanking := make(voting.GovernanceVote)
+	// decide energy thresholds are arbitary
+	// can add another threshold for deciding governance if required
+	if my_energy <= 2 {
+		governanceRanking[utils.Democracy] = 1.0
+		governanceRanking[utils.Dictatorship] = 0.0
+		governanceRanking[utils.Leadership] = 0.0
+	} else if my_energy > 2 {
+		governanceRanking[utils.Democracy] = 0.0
+		governanceRanking[utils.Dictatorship] = 0.0
+		governanceRanking[utils.Leadership] = 1.0
+	} else {
+		governanceRanking[utils.Democracy] = 1.0
+		governanceRanking[utils.Dictatorship] = 0.0
+		governanceRanking[utils.Leadership] = 0.0
+	}
+
+	fmt.Println(governanceRanking)
+	return governanceRanking
 }
