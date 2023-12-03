@@ -52,6 +52,7 @@ type IBaselineAgent interface {
 type BaselineAgent struct {
 	objects.BaseBiker
 	currentBike       *objects.MegaBike
+	OtherBiker           objects.IBaseBiker
 	lootBoxColour     utils.Colour
 	proposedLootBox   objects.ILootBox
 	mylocationHistory []utils.Coordinates     //log location history for this agent
@@ -140,6 +141,24 @@ func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootB
 	sort.Slice(proposedLootBox, func(i, j int) bool {
 		return physics.ComputeDistance(currentBike.GetPosition(), proposedLootBox[i].GetPosition()) < physics.ComputeDistance(currentBike.GetPosition(), proposedLootBox[j].GetPosition())
 	})
+
+	// Process messages and update honesty matrix
+	msgs := agent.GetAllMessages(fellowBikers)
+	for _, msg := range msgs {
+		switch m := msg.(type) {
+		case objects.KickOffAgentMessage:
+			// Print out the ID of the agent who might be kicked off
+			fmt.Printf("Received kickout message for agent ID: %s\n", m.AgentId)
+
+			// Calculate the honesty value for the agent in the message
+			//honestyValue := GetHonestyValue(m.AgentId)
+			if m.AgentId == agent.GetID() {
+				senderId := m.BaseMessage.GetSender()
+				// Decrease the sender's honesty by 0.05
+				GlobalHonestyMatrix.DecreaseHonesty(senderId.GetID(), 0.05)
+			}
+		}
+	}
 
 	for i, lootBox := range proposedLootBox {
 		//loop through all fellow bikers and check if they have the same colour as the lootbox
@@ -338,4 +357,54 @@ func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
 	//  rank[i] = 0.25
 	//}
 	return rank
+}
+
+func (agent *BaselineAgent) HandleKickOffMessage(msg objects.KickOffAgentMessage) {
+	if msg.AgentId == agent.GetID() {
+		senderId := msg.BaseMessage.GetSender()
+		GlobalHonestyMatrix.DecreaseHonesty(senderId.GetID(), 0.05)
+	} else {
+		senderId := msg.BaseMessage.GetSender()
+		GlobalHonestyMatrix.IncreaseHonesty(senderId.GetID(), 0.05)
+	}
+}
+
+func (agent *BaselineAgent) CreateKickOffMessage() []objects.KickOffAgentMessage {
+	currentMegaBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
+	fellowBikers := currentMegaBike.GetAgents()
+
+	var messages []objects.KickOffAgentMessage
+
+	for _, fellowBiker := range fellowBikers {
+		messages = append(messages, objects.KickOffAgentMessage{
+			BaseMessage: messaging.CreateMessage[objects.IBaseBiker](agent, []objects.IBaseBiker{fellowBiker}),
+			AgentId:     fellowBiker.GetID(),
+			KickOff:     false,
+		})
+	}
+
+	return messages
+}
+
+func (agent *BaselineAgent) GetAllMessages(fellowBikers []objects.IBaseBiker) []messaging.IMessage[objects.IBaseBiker] {
+	var messages []messaging.IMessage[objects.IBaseBiker]
+
+	if wantToSendMsg := true; wantToSendMsg {
+		//reputationMsgs := agent.CreateReputationMessage()
+		kickOffMsgs := agent.CreateKickOffMessage()
+		/* 		lootboxMsg := agent.CreateLootboxMessage()
+		   		joiningMsg := agent.CreateJoiningMessage()
+		   		governceMsg := agent.CreateGoverenceMessage() */
+
+		for _, msg := range kickOffMsgs {
+			messages = append(messages, msg)
+		}
+	}
+
+	return messages
+}
+
+// GetHonestyValue returns the honesty value for the given agent ID from the global honesty matrix.
+func GetHonestyValue(agentID uuid.UUID) float64 {
+	return GlobalHonestyMatrix.Records[agentID]
 }
