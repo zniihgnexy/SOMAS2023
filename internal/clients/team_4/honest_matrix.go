@@ -10,7 +10,7 @@ type HonestyMatrix struct {
 
 // GlobalHonestyMatrix holds the honesty values for all agents.
 // It needs to be initialized before usage.
-var GlobalHonestyMatrix *HonestyMatrix
+//var GlobalHonestyMatrix *HonestyMatrix
 
 // NewHonestyMatrix creates a new HonestyMatrix with default honesty values for each agent.
 func NewHonestyMatrix(agentIDs []uuid.UUID) *HonestyMatrix {
@@ -33,22 +33,32 @@ func (hm *HonestyMatrix) GetHonesty(agentID uuid.UUID) float64 {
 	return hm.Records[agentID]
 }
 
-func (hm *HonestyMatrix) DecreaseHonesty(agentID uuid.UUID, decreaseAmount float64) {
-	if currentHonesty, ok := hm.Records[agentID]; ok {
-		newHonesty := currentHonesty - decreaseAmount
-		if newHonesty < 0 {
-			newHonesty = 0.0000001
-		}
-		hm.Records[agentID] = newHonesty
-	}
+func (agent *BaselineAgent) CalculateHonestyMatrix() map[uuid.UUID]float64 {
+    // Copy the local honesty matrix values
+    honestyMatrixCopy := make(map[uuid.UUID]float64)
+    for agentID, honestyValue := range agent.honestyMatrix {
+        //honestyMatrixCopy[agentID] = honestyValue
+		honestyMatrixCopy[agentID] = 1
+    }
+    return honestyMatrixCopy
 }
 
-func (hm *HonestyMatrix) IncreaseHonesty(agentID uuid.UUID, decreaseAmount float64) {
-	if currentHonesty, ok := hm.Records[agentID]; ok {
-		newHonesty := currentHonesty + decreaseAmount
-		if newHonesty > 1 {
-			newHonesty = 1
-		}
-		hm.Records[agentID] = newHonesty
-	}
+func (agent *BaselineAgent) DecreaseHonesty(agentID uuid.UUID, decreaseAmount float64) {
+    if currentHonesty, ok := agent.honestyMatrix[agentID]; ok {
+        newHonesty := currentHonesty - decreaseAmount
+        if newHonesty < 0 {
+            newHonesty = 0
+        }
+        agent.honestyMatrix[agentID] = newHonesty
+    }
+}
+
+func (agent *BaselineAgent) IncreaseHonesty(agentID uuid.UUID, increaseAmount float64) {
+    if currentHonesty, ok := agent.honestyMatrix[agentID]; ok {
+        newHonesty := currentHonesty + increaseAmount
+        if newHonesty > 1 {
+            newHonesty = 1
+        }
+        agent.honestyMatrix[agentID] = newHonesty
+    }
 }
