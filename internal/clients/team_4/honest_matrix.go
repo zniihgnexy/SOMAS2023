@@ -33,32 +33,22 @@ func (hm *HonestyMatrix) GetHonesty(agentID uuid.UUID) float64 {
 	return hm.Records[agentID]
 }
 
-func (agent *BaselineAgent) CalculateHonestyMatrix() map[uuid.UUID]float64 {
-    // Copy the local honesty matrix values
-    honestyMatrixCopy := make(map[uuid.UUID]float64)
-    for agentID, honestyValue := range agent.honestyMatrix {
-        //honestyMatrixCopy[agentID] = honestyValue
-		honestyMatrixCopy[agentID] = 1
-    }
-    return honestyMatrixCopy
-}
-
 func (agent *BaselineAgent) DecreaseHonesty(agentID uuid.UUID, decreaseAmount float64) {
-    if currentHonesty, ok := agent.honestyMatrix[agentID]; ok {
-        newHonesty := currentHonesty - decreaseAmount
-        if newHonesty < 0 {
-            newHonesty = 0
-        }
-        agent.honestyMatrix[agentID] = newHonesty
-    }
+	if currentHonesty, ok := agent.honestyMatrix[agentID]; ok {
+		newHonesty := currentHonesty - decreaseAmount
+		if newHonesty < 0 {
+			newHonesty = 0
+		}
+		agent.honestyMatrix[agentID] = newHonesty
+	}
 }
 
 func (agent *BaselineAgent) IncreaseHonesty(agentID uuid.UUID, increaseAmount float64) {
-    if currentHonesty, ok := agent.honestyMatrix[agentID]; ok {
-        newHonesty := currentHonesty + increaseAmount
-        if newHonesty > 1 {
-            newHonesty = 1
-        }
-        agent.honestyMatrix[agentID] = newHonesty
-    }
+	if currentHonesty, ok := agent.honestyMatrix[agentID]; ok {
+		newHonesty := currentHonesty + increaseAmount
+		if newHonesty > 1 {
+			newHonesty = 1
+		}
+		agent.honestyMatrix[agentID] = newHonesty
+	}
 }

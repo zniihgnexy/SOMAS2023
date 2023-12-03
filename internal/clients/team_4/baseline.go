@@ -68,44 +68,20 @@ func (agent *BaselineAgent) UpdateDecisionData() {
 	if len(agent.mylocationHistory) == 0 {
 		agent.mylocationHistory = make([]utils.Coordinates, 0)
 	}
+	if agent.honestyMatrix == nil {
+		agent.honestyMatrix = make(map[uuid.UUID]float64)
+	}
+	if agent.reputation == nil {
+		agent.reputation = make(map[uuid.UUID]float64)
+	}
 	fmt.Println("")
 	fmt.Println("Updating decision data ...")
-
- 	if agent.honestyMatrix == nil {
-        agent.honestyMatrix = make(map[uuid.UUID]float64)
-        // Assuming you have a method to get all agent IDs in the simulation
-        for _, fellowAgentID := range agent.GetAllAgentIDs() {
-            agent.honestyMatrix[fellowAgentID] = 1.0 // Set default value to 1
-        }
-    }
-
 	//update location history for the agent
 	agent.mylocationHistory = append(agent.mylocationHistory, agent.GetLocation())
 	//get current bike
 	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
 	//get fellow bikers
 	fellowBikers := currentBike.GetAgents()
-
-	// Process messages and update honesty matrix
-/*  	msgs := agent.GetAllMessages(fellowBikers)
-	
- 	for _, msg := range msgs {
-		switch m := msg.(type) {
-		case objects.KickOffAgentMessage:
-			// Print out the ID of the agent who might be kicked off
-			fmt.Printf("Received kickout message for agent ID: %s\n", m.AgentId)
-
-			// Calculate the honesty value for the agent in the message
-			//honestyValue := GetHonestyValue(m.AgentId)
-			if m.AgentId == agent.GetID() {
-				//example, if our agent is going to be kicked out, we don't like this one and reduce the reputation value
-				senderId := m.BaseMessage.GetSender()
-				// Decrease the sender's honesty by 0.05
-				GlobalHonestyMatrix.DecreaseHonesty(senderId.GetID(), 0.05)
-			}
-		}
-	}  */
-
 	//update energy history for each fellow biker
 	for _, fellow := range fellowBikers {
 		fellowID := fellow.GetID()
@@ -115,10 +91,10 @@ func (agent *BaselineAgent) UpdateDecisionData() {
 	}
 	//call reputation and honesty matrix to calcuiate/update them
 	//save updated reputation and honesty matrix
-	agent.reputation = agent.CalculateReputation()
-	agent.honestyMatrix = agent.CalculateHonestyMatrix()
-	
-	
+	agent.CalculateReputation()
+	agent.CalculateHonestyMatrix()
+	// agent.DisplayFellowsHonesty()
+	agent.DisplayFellowsReputation()
 }
 
 func (agent *BaselineAgent) rankFellowsReputation(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error) {
@@ -228,37 +204,37 @@ func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
 	totalEnergySpent := float64(0)
 	totalAllocation := float64(0)
 
-	// reputationRank, e1 := agent.rankFellowsReputation(fellowBikers)
-	// honestyRank, e2 := agent.rankFellowsHonesty(fellowBikers)
-	// if e1 != nil || e2 != nil {
-	// 	panic("unexpected error!")
-	// }
+	reputationRank, e1 := agent.rankFellowsReputation(fellowBikers)
+	honestyRank, e2 := agent.rankFellowsHonesty(fellowBikers)
+	if e1 != nil || e2 != nil {
+		panic("unexpected error!")
+	}
 
 	for _, fellow := range fellowBikers {
-		// w1 := 0.0 //weight for reputation
-		// w2 := 0.0 //weight for honesty
-		// w3 := 0.5 //weight for energy spent
-		// w4 := 0.5 //weight for energy level
+		w1 := 0.2 //weight for reputation
+		w2 := 0.2 //weight for honesty
+		w3 := 0.5 //weight for energy spent
+		w4 := 0.5 //weight for energy level
 		fellowID := fellow.GetID()
 		energyLog := agent.energyHistory[fellowID]
 		energySpent := energyLog[len(energyLog)-2] - energyLog[len(energyLog)-1]
 		totalEnergySpent += energySpent
 		// In the case where my fellow biker is the same colour as the lootbox
 		if fellow.GetColour() == agent.lootBoxColour {
-			// w1 = 0.0
-			// w2 = 0.0
-			// w3 = 1.0
-			// w4 = 1.0
+			w1 = 0.3
+			w2 = 0.3
+			w3 = 1.0
+			w4 = 1.0
 			// In the case where the I am the same colour as the lootbox
 			if fellow.GetColour() == agent.GetColour() {
-				// w1 = 0.0
-				// w2 = 0.0
-				// w3 = 1.0
-				// w4 = 1.0
+				w1 = 0.01
+				w2 = 0.01
+				w3 = 1.0
+				w4 = 1.0
 			}
 		}
-		// distribution[fellow.GetID()] = (w1 * reputationRank[fellowID]) + (w2 * honestyRank[fellowID]) + (w3 * energySpent) + (w4 * fellow.GetEnergyLevel()))
-		distribution[fellow.GetID()] = energySpent * rand.Float64() // random for now
+		distribution[fellow.GetID()] = float64((w1 * reputationRank[fellowID]) + (w2 * honestyRank[fellowID]) + (w3 * energySpent) + (w4 * fellow.GetEnergyLevel()))
+		// distribution[fellow.GetID()] = energySpent * rand.Float64() // random for now
 		totalAllocation += distribution[fellow.GetID()]
 	}
 
@@ -273,13 +249,72 @@ func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
 
 // Reputation and Honesty Matrix Teams Must Implement these or similar functions
 
-func (agent *BaselineAgent) CalculateReputation( /*choose*/ ) map[uuid.UUID]float64 {
-	random := make(map[uuid.UUID]float64)
-	return random
+func (agent *BaselineAgent) CalculateReputation() {
+	////////////////////////////
+	//  As the program I used for debugging invoked "padal" and "break" with values of 0, I conducted tests using random numbers.
+	// In case of an updated main program, I will need to adjust the parameters and expressions of the reputation matrix.
+	// The current version lacks real data during the debugging process.
+	////////////////////////////
+	megaBikes := agent.GetGameState().GetMegaBikes()
+
+	for _, bike := range megaBikes {
+		// Get all agents on MegaBike
+		fellowBikers := bike.GetAgents()
+
+		// Iterate over each agent on MegaBike, generate reputation assessment
+		for _, otherAgent := range fellowBikers {
+			// Exclude self
+			selfTest := otherAgent.GetID() //nolint
+			if selfTest == agent.GetID() {
+				agent.reputation[otherAgent.GetID()] = 1.0
+			}
+
+			// Monitor otherAgent's location
+			// location := otherAgent.GetLocation()
+			// RAP := otherAgent.GetResourceAllocationParams()
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Location:", location, "ResourceAllocationParams:", RAP)
+
+			// Monitor otherAgent's forces
+			forces := otherAgent.GetForces()
+			energyLevel := otherAgent.GetEnergyLevel()
+			ReputationForces := float64(forces.Pedal+forces.Brake+rand.Float64()) / energyLevel //CAUTION: REMOVE THE RANDOM VALUE
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Forces:", ReputationForces)
+
+			// Monitor otherAgent's bike status
+			bikeStatus := otherAgent.GetBikeStatus()
+			// Convert the boolean value to float64 and print the result
+			ReputationBikeShift := 0.2
+			if bikeStatus {
+				ReputationBikeShift = 1.0
+			}
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Bike_Shift", float64(ReputationBikeShift))
+
+			// Calculate Overall_reputation
+			OverallReputation := ReputationForces * ReputationBikeShift
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Overall Reputation:", OverallReputation)
+
+			// Store Overall_reputation in the reputation map
+			agent.reputation[otherAgent.GetID()] = OverallReputation
+		}
+	}
+	// for agentID, agentReputation := range agent.reputation {
+	// 	print("Agent ID: ", agentID.String(), ", Reputation: ", agentReputation, "\n")
+	// }
 }
-func (agent *BaselineAgent) CalculateHonestyMatrix( /*choose*/ ) map[uuid.UUID]float64 {
-	random := make(map[uuid.UUID]float64)
-	return random
+
+func (agent *BaselineAgent) CalculateHonestyMatrix() {
+	// Copy the local honesty matrix values
+	for _, bike := range agent.GetGameState().GetMegaBikes() {
+		for _, biker := range bike.GetAgents() {
+			bikerID := biker.GetID()
+			agent.honestyMatrix[bikerID] = 1.0
+		}
+	}
+	// for agentID, _ /*honestyValue*/ := range agent.honestyMatrix {
+	// 	//honestyMatrixCopy[agentID] = honestyValue
+	// 	agent.honestyMatrix[agentID] = 1.0
+	// }
+
 }
 
 func (agent *BaselineAgent) DisplayFellowsEnergyHistory() {
@@ -290,6 +325,28 @@ func (agent *BaselineAgent) DisplayFellowsEnergyHistory() {
 		fmt.Println("")
 		fmt.Println("Energy history for: ", fellowID)
 		fmt.Print(agent.energyHistory[fellowID])
+		fmt.Println("")
+	}
+}
+func (agent *BaselineAgent) DisplayFellowsHonesty() {
+	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
+	fellowBikers := currentBike.GetAgents()
+	for _, fellow := range fellowBikers {
+		fellowID := fellow.GetID()
+		fmt.Println("")
+		fmt.Println("Honesty Matrix for: ", fellowID)
+		fmt.Print(agent.honestyMatrix[fellowID])
+		fmt.Println("")
+	}
+}
+func (agent *BaselineAgent) DisplayFellowsReputation() {
+	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
+	fellowBikers := currentBike.GetAgents()
+	for _, fellow := range fellowBikers {
+		fellowID := fellow.GetID()
+		fmt.Println("")
+		fmt.Println("Reputation Matrix for: ", fellowID)
+		fmt.Print(agent.reputation[fellowID])
 		fmt.Println("")
 	}
 }
@@ -371,53 +428,3 @@ func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
 	//}
 	return rank
 }
-
-/* func (agent *BaselineAgent) HandleKickOffMessage(msg objects.KickOffAgentMessage) {
-	if msg.AgentId == agent.GetID() {
-		senderId := msg.BaseMessage.GetSender()
-		GlobalHonestyMatrix.DecreaseHonesty(senderId.GetID(), 0.05)
-	} else {
-		senderId := msg.BaseMessage.GetSender()
-		GlobalHonestyMatrix.IncreaseHonesty(senderId.GetID(), 0.05)
-	}
-} */
-
-/* func (agent *BaselineAgent) CreateKickOffMessage() []objects.KickOffAgentMessage {
-	currentMegaBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
-	fellowBikers := currentMegaBike.GetAgents()
-
-	var messages []objects.KickOffAgentMessage
-
-	for _, fellowBiker := range fellowBikers {
-		messages = append(messages, objects.KickOffAgentMessage{
-			BaseMessage: messaging.CreateMessage[objects.IBaseBiker](agent, []objects.IBaseBiker{fellowBiker}),
-			AgentId:     fellowBiker.GetID(),
-			KickOff:     false,
-		})
-	}
-
-	return messages
-} */
-
-/* func (agent *BaselineAgent) GetAllMessages(fellowBikers []objects.IBaseBiker) []messaging.IMessage[objects.IBaseBiker] {
-	var messages []messaging.IMessage[objects.IBaseBiker]
-
-	if wantToSendMsg := true; wantToSendMsg {
-		//reputationMsgs := agent.CreateReputationMessage()
-		kickOffMsgs := agent.CreateKickOffMessage()
-				lootboxMsg := agent.CreateLootboxMessage()
-		   		joiningMsg := agent.CreateJoiningMessage()
-		   		governceMsg := agent.CreateGoverenceMessage()
-
-		for _, msg := range kickOffMsgs {
-			messages = append(messages, msg)
-		}
-	}
-
-	return messages
-} */
-
-// GetHonestyValue returns the honesty value for the given agent ID from the global honesty matrix.
-/* func GetHonestyValue(agentID uuid.UUID) float64 {
-	return GlobalHonestyMatrix.Records[agentID]
-} */
