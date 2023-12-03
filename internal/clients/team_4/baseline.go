@@ -76,6 +76,8 @@ func (agent *BaselineAgent) UpdateDecisionData() {
         // Assuming you have a method to get all agent IDs in the simulation
         for _, fellowAgentID := range agent.GetAllAgentIDs() {
             agent.honestyMatrix[fellowAgentID] = 1.0 // Set default value to 1
+			honest_default := agent.GetHonesty(fellowAgentID)
+			fmt.Println("honest:", honest_default)
         }
     }
 
@@ -117,6 +119,8 @@ func (agent *BaselineAgent) UpdateDecisionData() {
 	//save updated reputation and honesty matrix
 	agent.reputation = agent.CalculateReputation()
 	agent.honestyMatrix = agent.CalculateHonestyMatrix()
+	
+	
 }
 
 func (agent *BaselineAgent) rankFellowsReputation(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error) {
