@@ -161,10 +161,18 @@ func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
 //
 // ISSUE:
 // 1. calculated reputation based on the value I can call. Need to be discuss further with @Mauro and tune properly befor submition.
+// 2. As the program I used for debugging invoked "padal" and "break" with values of 0, I conducted tests using random numbers. 
+// In case of an updated main program, I will need to adjust the parameters and expressions of the reputation matrix. 
+// The current version lacks real data during the debugging process.
 // ///////////////////////////////////////////////
 
 
 func (agent *BaselineAgent) Reputation_loop() map[uuid.UUID]float64 {
+	////////////////////////////
+	//  As the program I used for debugging invoked "padal" and "break" with values of 0, I conducted tests using random numbers. 
+	// In case of an updated main program, I will need to adjust the parameters and expressions of the reputation matrix. 
+	// The current version lacks real data during the debugging process.
+	////////////////////////////
 	reputation := make(map[uuid.UUID]float64)
 	megaBikes := agent.GetGameState().GetMegaBikes()
 
