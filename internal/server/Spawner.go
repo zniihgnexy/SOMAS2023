@@ -4,9 +4,13 @@ import (
 	"SOMAS2023/internal/common/objects"
 	"SOMAS2023/internal/common/utils"
 
+	team4 "SOMAS2023/internal/clients/team_4"
+
 	baseserver "github.com/MattSScott/basePlatformSOMAS/BaseServer"
 	"github.com/google/uuid"
 )
+
+const BikerAgentCount = 24
 
 func GetAgentGenerators() []baseserver.AgentGeneratorCountPair[objects.IBaseBiker] {
 	return []baseserver.AgentGeneratorCountPair[objects.IBaseBiker]{
@@ -15,7 +19,14 @@ func GetAgentGenerators() []baseserver.AgentGeneratorCountPair[objects.IBaseBike
 }
 
 func BikerAgentGenerator() objects.IBaseBiker {
-	return objects.GetIBaseBiker(utils.GenerateRandomColour(), uuid.New())
+	// Create a new instance of BaselineAgent
+	baselineAgent := &team4.BaselineAgent{
+		BaseBiker: *objects.GetBaseBiker(utils.GenerateRandomColour(), uuid.New()),
+		// Initialize other necessary fields of BaselineAgent if there are any
+	}
+
+	// Return the baselineAgent as an IBaseBiker
+	return baselineAgent
 }
 
 func (s *Server) spawnLootBox() {
@@ -36,8 +47,7 @@ func (s *Server) spawnMegaBike() {
 }
 
 func (s *Server) replenishMegaBikes() {
-	neededBikes := MegaBikeCount - len(s.megaBikes)
-	for i := 0; i < neededBikes; i++ {
+	for i := 0; i < MegaBikeCount-len(s.megaBikes); i++ {
 		s.spawnMegaBike()
 	}
 }
