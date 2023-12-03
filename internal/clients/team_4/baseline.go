@@ -76,8 +76,6 @@ func (agent *BaselineAgent) UpdateDecisionData() {
         // Assuming you have a method to get all agent IDs in the simulation
         for _, fellowAgentID := range agent.GetAllAgentIDs() {
             agent.honestyMatrix[fellowAgentID] = 1.0 // Set default value to 1
-			honest_default := agent.GetHonesty(fellowAgentID)
-			fmt.Println("honest:", honest_default)
         }
     }
 
@@ -89,7 +87,7 @@ func (agent *BaselineAgent) UpdateDecisionData() {
 	fellowBikers := currentBike.GetAgents()
 
 	// Process messages and update honesty matrix
-/* 	msgs := agent.GetAllMessages(fellowBikers)
+/*  	msgs := agent.GetAllMessages(fellowBikers)
 	
  	for _, msg := range msgs {
 		switch m := msg.(type) {
@@ -106,7 +104,7 @@ func (agent *BaselineAgent) UpdateDecisionData() {
 				GlobalHonestyMatrix.DecreaseHonesty(senderId.GetID(), 0.05)
 			}
 		}
-	} */
+	}  */
 
 	//update energy history for each fellow biker
 	for _, fellow := range fellowBikers {
