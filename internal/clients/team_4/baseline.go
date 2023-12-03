@@ -242,9 +242,60 @@ func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
 // Reputation and Honesty Matrix Teams Must Implement these or similar functions
 
 func (agent *BaselineAgent) CalculateReputation( /*choose*/ ) map[uuid.UUID]float64 {
-	random := make(map[uuid.UUID]float64)
-	return random
+	////////////////////////////
+	//  As the program I used for debugging invoked "padal" and "break" with values of 0, I conducted tests using random numbers.
+	// In case of an updated main program, I will need to adjust the parameters and expressions of the reputation matrix.
+	// The current version lacks real data during the debugging process.
+	////////////////////////////
+	reputation := make(map[uuid.UUID]float64)
+	megaBikes := agent.GetGameState().GetMegaBikes()
+
+	for _, bike := range megaBikes {
+		// Get all agents on MegaBike
+		fellowBikers := bike.GetAgents()
+
+		// Iterate over each agent on MegaBike, generate reputation assessment
+		for _, otherAgent := range fellowBikers {
+			// Exclude self
+			selfTest := otherAgent.GetID() //nolint
+			if selfTest == agent.GetID() {
+				reputation[otherAgent.GetID()] = 1.0
+			}
+
+			// Monitor otherAgent's location
+			// location := otherAgent.GetLocation()
+			// RAP := otherAgent.GetResourceAllocationParams()
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Location:", location, "ResourceAllocationParams:", RAP)
+
+			// Monitor otherAgent's forces
+			forces := otherAgent.GetForces()
+			energyLevel := otherAgent.GetEnergyLevel()
+			ReputationForces := float64(forces.Pedal+forces.Brake+rand.Float64()) / energyLevel //CAUTION: REMOVE THE RANDOM VALUE
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Forces:", ReputationForces)
+
+			// Monitor otherAgent's bike status
+			bikeStatus := otherAgent.GetBikeStatus()
+			// Convert the boolean value to float64 and print the result
+			ReputationBikeShift := 0.2
+			if bikeStatus {
+				ReputationBikeShift = 1.0
+			}
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Bike_Shift", float64(ReputationBikeShift))
+
+			// Calculate Overall_reputation
+			OverallReputation := ReputationForces * ReputationBikeShift
+			// fmt.Println("Agent ID:", otherAgent.GetID(), "Overall Reputation:", OverallReputation)
+
+			// Store Overall_reputation in the reputation map
+			reputation[otherAgent.GetID()] = OverallReputation
+		}
+	}
+	for agentID, agentReputation := range reputation {
+		print("Agent ID: ", agentID.String(), ", Reputation: ", agentReputation, "\n")
+	}
+	return reputation
 }
+
 func (agent *BaselineAgent) CalculateHonestyMatrix( /*choose*/ ) map[uuid.UUID]float64 {
 	random := make(map[uuid.UUID]float64)
 	return random
