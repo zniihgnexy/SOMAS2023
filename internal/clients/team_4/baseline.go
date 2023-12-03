@@ -37,8 +37,7 @@ type IBaselineAgent interface {
 	//IMPLEMENTED FUNCTIONS
 	ProposeDirection() uuid.UUID                                    //returns the id of the desired lootbox
 	FinalDirectionVote(proposals []uuid.UUID) voting.LootboxVoteMap //returns rank of proposed lootboxes
-
-	//Error with getting energy history (commented)
+	//some parts commented - awaiting further implementation of reputation and honesty matrix
 	DecideAllocation() voting.IdVoteMap //decide the allocation parameters
 
 	//HELPER FUNCTIONS
@@ -189,56 +188,56 @@ func (agent *BaselineAgent) FinalDirectionVote(proposals []uuid.UUID) voting.Loo
 	return rank
 }
 
-// func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
-// 	agent.UpdateDecisionData()
-// 	distribution := make(map[uuid.UUID]float64) //make(voting.IdVoteMap)
-// 	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
-// 	fellowBikers := currentBike.GetAgents()
-// 	totalEnergySpent := float64(0)
-// 	totalAllocation := float64(0)
+func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
+	agent.UpdateDecisionData()
+	distribution := make(map[uuid.UUID]float64) //make(voting.IdVoteMap)
+	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
+	fellowBikers := currentBike.GetAgents()
+	totalEnergySpent := float64(0)
+	totalAllocation := float64(0)
 
-// 	reputationRank, e1 := agent.rankFellowsReputation(fellowBikers)
-// 	honestyRank, e2 := agent.rankFellowsHonesty(fellowBikers)
-// 	if e1 != nil || e2 != nil {
-// 		panic("unexpected error!")
-// 	}
+	// reputationRank, e1 := agent.rankFellowsReputation(fellowBikers)
+	// honestyRank, e2 := agent.rankFellowsHonesty(fellowBikers)
+	// if e1 != nil || e2 != nil {
+	// 	panic("unexpected error!")
+	// }
 
-// 	for _, fellow := range fellowBikers {
-// 		w1 := 0.0 //weight for reputation
-// 		w2 := 0.0 //weight for honesty
-// 		w3 := 0.5 //weight for energy spent
-// 		w4 := 0.5 //weight for energy level
-// 		fellowID := fellow.GetID()
-// 		energyLog := agent.energyHistory[fellowID]
-// 		energySpent := energyLog[len(energyLog)-1] - energyLog[len(energyLog)-2]
-// 		totalEnergySpent += energySpent
-// 		// In the case where my fellow biker is the same colour as the lootbox
-// 		if fellow.GetColour() == agent.lootBoxColour {
-// 			w1 = 0.0
-// 			w2 = 0.0
-// 			w3 = 0.5
-// 			w4 = 0.5
-// 			// In the case where the I am the same colour as the lootbox
-// 			if fellow.GetColour() == agent.GetColour() {
-// 				w1 = 0.0
-// 				w2 = 0.0
-// 				w3 = 1.0
-// 				w4 = 1.0
-// 			}
-// 		}
-// 		distribution[fellow.GetID()] = float64(w1*reputationRank[fellowID]) + (w2 * honestyRank[fellowID]) + (w3 * energySpent) + (w4 * fellow.GetEnergyLevel()) //currently sum but can be changed to product
-// 		totalAllocation += distribution[fellow.GetID()]
-// 	}
+	for _, fellow := range fellowBikers {
+		// w1 := 0.0 //weight for reputation
+		// w2 := 0.0 //weight for honesty
+		// w3 := 0.5 //weight for energy spent
+		// w4 := 0.5 //weight for energy level
+		fellowID := fellow.GetID()
+		energyLog := agent.energyHistory[fellowID]
+		energySpent := energyLog[len(energyLog)-2] - energyLog[len(energyLog)-1]
+		totalEnergySpent += energySpent
+		// In the case where my fellow biker is the same colour as the lootbox
+		if fellow.GetColour() == agent.lootBoxColour {
+			// w1 = 0.0
+			// w2 = 0.0
+			// w3 = 1.0
+			// w4 = 1.0
+			// In the case where the I am the same colour as the lootbox
+			if fellow.GetColour() == agent.GetColour() {
+				// w1 = 0.0
+				// w2 = 0.0
+				// w3 = 1.0
+				// w4 = 1.0
+			}
+		}
+		// distribution[fellow.GetID()] = (w1 * reputationRank[fellowID]) + (w2 * honestyRank[fellowID]) + (w3 * energySpent) + (w4 * fellow.GetEnergyLevel()))
+		distribution[fellow.GetID()] = energySpent * rand.Float64() // random for now
+		totalAllocation += distribution[fellow.GetID()]
+	}
 
-// 	//normalize the distribution
-// 	for _, fellow := range fellowBikers {
-// 		fellowID := fellow.GetID()
-// 		distribution[fellowID] = distribution[fellowID] / totalAllocation
-// 		fmt.Println("fellowID: ", fellowID, " distribution: ", distribution[fellowID])
-// 	}
+	//normalize the distribution
+	for _, fellow := range fellowBikers {
+		fellowID := fellow.GetID()
+		distribution[fellowID] = distribution[fellowID] / totalAllocation
+	}
 
-// 	return distribution
-// }
+	return distribution
+}
 
 // Reputation and Honesty Matrix Teams Must Implement these or similar functions
 
