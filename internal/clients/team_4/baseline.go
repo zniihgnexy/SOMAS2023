@@ -170,7 +170,7 @@ func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
 	//}
 	fmt.Println(rank)
 	return rank
-}
+} 
 
 func (agent *BaselineAgent) HandleKickOffMessage(msg objects.KickOffAgentMessage) {
 	if msg.AgentId == agent.GetID() {
