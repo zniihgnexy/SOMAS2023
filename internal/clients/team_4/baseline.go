@@ -450,8 +450,6 @@ func (agent *BaselineAgent) DecideJoining(pendingAgents []uuid.UUID) map[uuid.UU
 	agent.UpdateDecisionData()
 	decision := make(map[uuid.UUID]bool)
 	for _, pendingAgent := range pendingAgents {
-		// energyLog := agent.energyHistory[pendingAgent]
-		// energySpent := energyLog[len(energyLog)-2] - energyLog[len(energyLog)-1]
 		reputation := agent.reputation[pendingAgent] //get the proposed agent reputation
 		honesty := agent.honestyMatrix[pendingAgent] //get the proposed agent honesty
 		//calculate the decision
