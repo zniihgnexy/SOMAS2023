@@ -99,7 +99,7 @@ func (agent *BaselineAgent) UpdateDecisionData() {
 	agent.CalculateReputation()
 	agent.CalculateHonestyMatrix()
 	// agent.DisplayFellowsHonesty()
-	agent.DisplayFellowsReputation()
+	// agent.DisplayFellowsReputation()
 }
 
 func (agent *BaselineAgent) rankFellowsReputation(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error) {
@@ -391,7 +391,7 @@ func (agent *BaselineAgent) DecideForces(direction uuid.UUID) {
 	energyLevel := agent.GetEnergyLevel() // 当前能量
 
 	randomBreakForce := float64(0)
-	randomPedalForce := rand.Float64() * energyLevel // 使用 rand 包生成随机的 pedal 力量，可以根据需要调整范围
+	randomPedalForce := rand.Float64() * energyLevel
 
 	if randomPedalForce == 0 {
 		// just random break force based on energy level, but not too much
@@ -400,7 +400,6 @@ func (agent *BaselineAgent) DecideForces(direction uuid.UUID) {
 		randomBreakForce = 0
 	}
 
-	// 因为force是一个struct,包括pedal, brake,和turning，因此需要一起定义，不能够只有pedal
 	forces := utils.Forces{
 		Pedal: randomPedalForce,
 		Brake: randomBreakForce, // random for now
@@ -423,7 +422,6 @@ func (agent *BaselineAgent) DecideJoining(pendingAgents []uuid.UUID) map[uuid.UU
 		w2 := 0.5
 		reputation := agent.reputation[pendingAgent]
 		honesty := agent.honestyMatrix[pendingAgent]
-		fmt.Println("asdsad", reputation, " ", honesty)
 		if (w1*reputation + w2*honesty) >= 0.55 {
 			decision[pendingAgent] = true
 		} else {
@@ -444,4 +442,58 @@ func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
 	//  rank[i] = 0.25
 	//}
 	return rank
+}
+
+func (agent *BaselineAgent) nearestLoot() uuid.UUID {
+	currLocation := agent.GetLocation()
+	shortestDist := math.MaxFloat64
+	var nearestBox uuid.UUID
+	var currDist float64
+	for _, loot := range agent.GetGameState().GetLootBoxes() {
+		x, y := loot.GetPosition().X, loot.GetPosition().Y
+		currDist = math.Sqrt(math.Pow(currLocation.X-x, 2) + math.Pow(currLocation.Y-y, 2))
+		if currDist < shortestDist {
+			nearestBox = loot.GetID()
+			shortestDist = currDist
+		}
+	}
+	return nearestBox
+}
+
+func (agent *BaselineAgent) DictateDirection() uuid.UUID {
+	agent.proposedLootBox = nil
+	if agent.GetEnergyLevel() <= 30 { //prioritize survival, if low on energy, go towards bereast lootbox
+		return agent.nearestLoot()
+	} else {
+		lootBoxes := agent.GetGameState().GetLootBoxes()
+		agentLocation := agent.GetLocation() //agent's location
+		shortestDistance := math.MaxFloat64
+
+		for _, lootbox := range lootBoxes {
+			lootboxLocation := lootbox.GetPosition()
+			distance := physics.ComputeDistance(agentLocation, lootboxLocation)
+			if agent.proposedLootBox == nil && distance < shortestDistance {
+				shortestDistance = distance
+				agent.proposedLootBox = lootbox
+			}
+			if distance < shortestDistance || agent.GetColour() == lootbox.GetColour() {
+				shortestDistance = distance
+				agent.proposedLootBox = lootbox
+			}
+		}
+		return agent.proposedLootBox.GetID()
+	}
+
+}
+func (agent *BaselineAgent) VoteDictator() voting.IdVoteMap {
+	votes := make(voting.IdVoteMap)
+	fellowBikers := agent.GetFellowBikers()
+	for _, fellowBiker := range fellowBikers {
+		if fellowBiker.GetColour() == agent.GetColour() { //if there is going to be a dictatorship, vote for agents with the same colour.
+			votes[fellowBiker.GetID()] = 1.0
+		} else {
+			votes[fellowBiker.GetID()] = 0.0
+		}
+	}
+	return votes
 }
