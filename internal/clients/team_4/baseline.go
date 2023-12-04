@@ -36,11 +36,13 @@ type IBaselineAgent interface {
 	FinalDirectionVote(proposals []uuid.UUID) voting.LootboxVoteMap //returns rank of proposed lootboxes
 	DecideAllocation() voting.IdVoteMap                             //decide the allocation parameters
 	DecideJoining(pendinAgents []uuid.UUID) map[uuid.UUID]bool      //decide whether to accept or not accept bikers, ranks the ones
-	nearestLoot() uuid.UUID
-	DictateDirection() uuid.UUID //called only when the agent is the dictator
+	nearestLoot() uuid.UUID                                         //returns the id of the nearest lootbox
+	DictateDirection() uuid.UUID                                    //called only when the agent is the dictator
 
 	//HELPER FUNCTIONS
-	UpdateDecisionData() //updates all the data needed for the decision making process(call at the start of any decision making function)
+	UpdateDecisionData()           //updates all the data needed for the decision making process(call at the start of any decision making function)
+	getHonestyAverage() float64    //returns the average honesty of all agents
+	getReputationAverage() float64 //returns the average reputation of all agents
 
 	rankFellowsReputation(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error) //returns normal rank of fellow bikers reputation
 	rankFellowsHonesty(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error)    //returns normal rank of fellow bikers honesty
@@ -134,6 +136,29 @@ func (agent *BaselineAgent) rankFellowsHonesty(agentsOnBike []objects.IBaseBiker
 		rank[fellowID] = float64(agent.honestyMatrix[fellowID] / totalsum)
 	}
 	return rank, nil
+}
+
+func (agent *BaselineAgent) getReputationAverage() float64 {
+	sum := float64(0)
+	//loop through all bikers find the average reputation
+	for _, bike := range agent.GetGameState().GetMegaBikes() {
+		for _, biker := range bike.GetAgents() {
+			bikerID := biker.GetID()
+			sum += agent.reputation[bikerID]
+		}
+	}
+	return sum / float64(len(agent.reputation))
+}
+func (agent *BaselineAgent) getHonestyAverage() float64 {
+	sum := float64(0)
+	//loop through all bikers find the average honesty
+	for _, bike := range agent.GetGameState().GetMegaBikes() {
+		for _, biker := range bike.GetAgents() {
+			bikerID := biker.GetID()
+			sum += agent.honestyMatrix[bikerID]
+		}
+	}
+	return sum / float64(len(agent.honestyMatrix))
 }
 
 func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootBox) (map[uuid.UUID]float64, error) {
@@ -431,6 +456,7 @@ func (agent *BaselineAgent) DecideJoining(pendingAgents []uuid.UUID) map[uuid.UU
 		w2 := 0.5
 		reputation := agent.reputation[pendingAgent]
 		honesty := agent.honestyMatrix[pendingAgent]
+		//calculate the decision
 		if (w1*reputation + w2*honesty) >= 0.55 {
 			decision[pendingAgent] = true
 		} else {
