@@ -20,23 +20,24 @@ type IBaselineAgent interface {
 	CalculateReputation( /*choose*/ ) map[uuid.UUID]float64    //calculate reputation matrix
 	CalculateHonestyMatrix( /*choose*/ ) map[uuid.UUID]float64 //calculate honesty matrix
 
-	DecideAction() objects.BikerAction                         //determines what action the agent is going to take this round. (changeBike or Pedal)
-	DecideForce(direction uuid.UUID)                           //defines the vector you pass to the bike: [pedal, brake, turning]
-	DecideJoining(pendinAgents []uuid.UUID) map[uuid.UUID]bool //decide whether to accept or not accept bikers, ranks the ones
-	ChangeBike() uuid.UUID                                     //called when biker wants to change bike, it will choose which bike to try and join
+	DecideAction() objects.BikerAction //determines what action the agent is going to take this round. (changeBike or Pedal)
+	DecideForce(direction uuid.UUID)   //defines the vector you pass to the bike: [pedal, brake, turning]
+	ChangeBike() uuid.UUID             //called when biker wants to change bike, it will choose which bike to try and join
 	VoteForKickout() map[uuid.UUID]int
 
 	//CURRENTLY UNUSED/NOT CONSIDERED FUNCTIONS
 	DecideGovernance() voting.GovernanceVote //decide the governance system
 	VoteDictator() voting.IdVoteMap
 	VoteLeader() voting.IdVoteMap
-	DictateDirection() uuid.UUID //called only when the agent is the dictator
-	LeadDirection() uuid.UUID    //called only when the agent is the leader
+	LeadDirection() uuid.UUID //called only when the agent is the leader
 
 	//IMPLEMENTED FUNCTIONS
 	ProposeDirection() uuid.UUID                                    //returns the id of the desired lootbox
 	FinalDirectionVote(proposals []uuid.UUID) voting.LootboxVoteMap //returns rank of proposed lootboxes
 	DecideAllocation() voting.IdVoteMap                             //decide the allocation parameters
+	DecideJoining(pendinAgents []uuid.UUID) map[uuid.UUID]bool      //decide whether to accept or not accept bikers, ranks the ones
+	nearestLoot() uuid.UUID
+	DictateDirection() uuid.UUID //called only when the agent is the dictator
 
 	//HELPER FUNCTIONS
 	UpdateDecisionData() //updates all the data needed for the decision making process(call at the start of any decision making function)
