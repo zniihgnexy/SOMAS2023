@@ -212,6 +212,7 @@ func (bb *BaseBiker) DecideForce(direction uuid.UUID) {
 		}
 		bb.SetForces(escapeAudiForces)
 	}
+
 }
 
 // decide which bike to go to. the base agent chooses a random bike

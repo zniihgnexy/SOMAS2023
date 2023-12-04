@@ -284,42 +284,6 @@ func (agent *BaselineAgent) ProposeDirection() uuid.UUID {
 	return agent.proposedLootBox.GetID()
 }
 
-// DecideAction only pedal
-func (agent *BaselineAgent) DecideAction() objects.BikerAction {
-	fmt.Println("Team 4")
-	return objects.Pedal
-}
-
-// DecideForces randomly based on current energyLevel
-func (agent *BaselineAgent) DecideForces(direction uuid.UUID) {
-	//save the target lootbox
-	agent.lootBoxColour = agent.GetGameState().GetLootBoxes()[direction].GetColour()
-
-	energyLevel := agent.GetEnergyLevel() // 当前能量
-
-	randomBreakForce := float64(0)
-	randomPedalForce := rand.Float64() * energyLevel // 使用 rand 包生成随机的 pedal 力量，可以根据需要调整范围
-
-	if randomPedalForce == 0 {
-		// just random break force based on energy level, but not too much
-		randomBreakForce += rand.Float64() * energyLevel * 0.5
-	} else {
-		randomBreakForce = 0
-	}
-
-	// 因为force是一个struct,包括pedal, brake,和turning，因此需要一起定义，不能够只有pedal
-	forces := utils.Forces{
-		Pedal: randomPedalForce,
-		Brake: randomBreakForce, // random for now
-		Turning: utils.TurningDecision{
-			SteerBike:     true,
-			SteeringForce: physics.ComputeOrientation(agent.GetLocation(), agent.GetGameState().GetMegaBikes()[direction].GetPosition()) - agent.GetGameState().GetMegaBikes()[agent.currentBike.GetID()].GetOrientation(),
-		},
-	}
-
-	agent.SetForces(forces)
-}
-
 // DecideJoining accept all
 func (agent *BaselineAgent) DecideJoining(pendingAgents []uuid.UUID) map[uuid.UUID]bool {
 	decision := make(map[uuid.UUID]bool)
@@ -347,7 +311,49 @@ func (agent *BaselineAgent) DecideGovernance() voting.GovernanceVote {
 		governanceRanking[utils.Dictatorship] = 0.0
 		governanceRanking[utils.Leadership] = 0.0
 	}
-
-	fmt.Println(governanceRanking)
+	//fmt.Println(governanceRanking)
 	return governanceRanking
+}
+
+func (agent *BaselineAgent) DecideAction() objects.BikerAction {
+	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
+	fellowBikers := currentBike.GetAgents()
+	myColor := agent.GetColour()
+	// Initialize count of fellow bikers with the same color
+	// Reputation and honesty
+	// Leadership + Dictatorhsip
+	// Resource allocation
+	count := 0
+
+	for _, fellow := range fellowBikers {
+		colorAgent := fellow.GetColour()
+
+		// Check if the color of the fellow biker matches the agent's color
+		if myColor == colorAgent {
+			count++
+		}
+	}
+	// Initialize action variable
+	var action objects.BikerAction
+	// Check the count and set the action accordingly
+	if count < 2 {
+		action = objects.ChangeBike
+	} else {
+		action = objects.Pedal
+	}
+	// Return the action
+	return action
+}
+
+func (agent *BaselineAgent) ChangeBike() uuid.UUID {
+	megaBikes := agent.GetGameState().GetMegaBikes()
+	i, targetI := 0, rand.Intn(len(megaBikes))
+	// Go doesn't have a sensible way to do this...
+	for id := range megaBikes {
+		if i == targetI {
+			return id
+		}
+		i++
+	}
+	panic("no bikes")
 }
