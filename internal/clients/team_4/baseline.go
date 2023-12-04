@@ -43,6 +43,7 @@ type IBaselineAgent interface {
 	UpdateDecisionData()           //updates all the data needed for the decision making process(call at the start of any decision making function)
 	getHonestyAverage() float64    //returns the average honesty of all agents
 	getReputationAverage() float64 //returns the average reputation of all agents
+	findOptimalBike() uuid.UUID    //returns the optimal bike on the map.
 
 	rankFellowsReputation(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error) //returns normal rank of fellow bikers reputation
 	rankFellowsHonesty(agentsOnBike []objects.IBaseBiker) (map[uuid.UUID]float64, error)    //returns normal rank of fellow bikers honesty
@@ -530,3 +531,19 @@ func (agent *BaselineAgent) VoteDictator() voting.IdVoteMap {
 	}
 	return votes
 }
+
+// func (agent *BaselineAgent) findOptimalBike() uuid.UUID{
+
+// }
+// func (bb *BaseBiker) ChangeBike() uuid.UUID {
+// 	megaBikes := bb.gameState.GetMegaBikes()
+// 	i, targetI := 0, rand.Intn(len(megaBikes))
+// 	// Go doesn't have a sensible way to do this...
+// 	for id := range megaBikes {
+// 		if i == targetI {
+// 			return id
+// 		}
+// 		i++
+// 	}
+// 	panic("no bikes")
+// }
