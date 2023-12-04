@@ -98,6 +98,7 @@ func (agent *BaselineAgent) UpdateDecisionData() {
 	//save updated reputation and honesty matrix
 	agent.CalculateReputation()
 	agent.CalculateHonestyMatrix()
+	// agent.DisplayFellowsEnergyHistory()
 	// agent.DisplayFellowsHonesty()
 	// agent.DisplayFellowsReputation()
 }
@@ -138,17 +139,24 @@ func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootB
 	rank := make(map[uuid.UUID]float64)
 	ranksum := make(map[uuid.UUID]float64)
 	totalsum := float64(0)
+	distanceRank := float64(0)
+	w1 := float64(0.7) //weight for distance
+	w2 := float64(0.2) //weight for reputation
+	w3 := float64(0.1) //weight for honesty
 	totaloptions := len(proposedLootBox)
 	minEnergyThreshold := 0.2 //if energy level is below this threshold, the agent will increase voting towards its colour lootbox
 
 	currentBike := agent.GetGameState().GetMegaBikes()[agent.GetBike()]
 	fellowBikers := currentBike.GetAgents()
+	//This is the relavtive reputation and honest for bikers my bike
 	reputationRank, e1 := agent.rankFellowsReputation(fellowBikers)
 	honestyRank, e2 := agent.rankFellowsHonesty(fellowBikers)
+	//This is the absolute reputation and honest for bikers my bike
+	// reputationRank  := agent.reputation
+	// honestyRank  := agent.honestyMatrix
 	if e1 != nil || e2 != nil {
 		panic("unexpected error!")
 	}
-
 	//sort Proposed Loot Boxes by distance
 	sort.Slice(proposedLootBox, func(i, j int) bool {
 		return physics.ComputeDistance(currentBike.GetPosition(), proposedLootBox[i].GetPosition()) < physics.ComputeDistance(currentBike.GetPosition(), proposedLootBox[j].GetPosition())
@@ -157,26 +165,27 @@ func (agent *BaselineAgent) rankTargetProposals(proposedLootBox []objects.ILootB
 	for i, lootBox := range proposedLootBox {
 		//loop through all fellow bikers and check if they have the same colour as the lootbox
 		for _, fellow := range fellowBikers {
+			distanceRank := float64(totaloptions - i)
 			fellowID := fellow.GetID()
 			if fellow.GetColour() == lootBox.GetColour() {
-				weight := (float64(totaloptions-i) * reputationRank[fellowID] * honestyRank[fellowID]) / 1.2
+				weight := (w1 * distanceRank) + (w2 * reputationRank[fellowID]) + (w3 * honestyRank[fellowID])
 				ranksum[lootBox.GetID()] += weight
 				totalsum += weight
 			}
 		}
 
 		if lootBox.GetColour() == agent.GetColour() {
-			weight := float64(totaloptions-i) * 2.0
+			weight := distanceRank * w1 * 1.25
 			//if energy level is below threshold, increase weighting towards own colour lootbox
 			if agent.GetEnergyLevel() < minEnergyThreshold {
 				weight *= 2
 			}
 			ranksum[lootBox.GetID()] += weight
 			totalsum += weight
-
-		} else {
-			weight := float64(totaloptions-i) / float64(totaloptions)
-			ranksum[lootBox.GetID()] += weight
+		}
+		if ranksum[lootBox.GetID()] == 0 {
+			weight := (distanceRank * w1 * 2.6)
+			ranksum[lootBox.GetID()] = weight
 			totalsum += weight
 		}
 	}
@@ -216,26 +225,25 @@ func (agent *BaselineAgent) DecideAllocation() voting.IdVoteMap {
 	}
 
 	for _, fellow := range fellowBikers {
-		w1 := 0.2 //weight for reputation
-		w2 := 0.2 //weight for honesty
-		w3 := 0.5 //weight for energy spent
-		w4 := 0.5 //weight for energy level
+		w1 := 0.3 //weight for reputation
+		w2 := 0.3 //weight for honesty
+		w3 := 0.3 //weight for energy spent
+		w4 := 0.1 //weight for energy level
 		fellowID := fellow.GetID()
 		energyLog := agent.energyHistory[fellowID]
 		energySpent := energyLog[len(energyLog)-2] - energyLog[len(energyLog)-1]
 		totalEnergySpent += energySpent
-		// In the case where my fellow biker is the same colour as the lootbox
-		if fellow.GetColour() == agent.lootBoxColour {
-			w1 = 0.3
-			w2 = 0.3
-			w3 = 1.0
-			w4 = 1.0
-			// In the case where the I am the same colour as the lootbox
-			if fellow.GetColour() == agent.GetColour() {
-				w1 = 0.01
-				w2 = 0.01
-				w3 = 1.0
-				w4 = 1.0
+		// In the case where the I am the same colour as the lootbox
+		if fellowID == agent.GetID() {
+			w1 = 0.001
+			w2 = 0.001
+			w3 = 0.398
+			w4 = 0.6
+			if agent.lootBoxColour == agent.GetColour() {
+				w1 = 0.001
+				w2 = 0.001
+				w3 = 0.6
+				w4 = 0.6
 			}
 		}
 		distribution[fellow.GetID()] = float64((w1 * reputationRank[fellowID]) + (w2 * honestyRank[fellowID]) + (w3 * energySpent) + (w4 * fellow.GetEnergyLevel()))
