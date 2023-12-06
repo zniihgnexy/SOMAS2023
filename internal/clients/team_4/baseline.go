@@ -7,7 +7,7 @@ import (
 	"SOMAS2023/internal/common/voting"
 	"fmt"
 	"math"
-	"math/rand"
+	//"math/rand"
 	"sort"
 
 	"github.com/google/uuid"
@@ -547,10 +547,18 @@ func (agent *BaselineAgent) CalculateReputation() {
 			// fmt.Println("Agent ID:", otherAgent.GetID(), "Location:", location, "ResourceAllocationParams:", RAP)
 
 			// Monitor otherAgent's forces
-			forces := otherAgent.GetForces()
+			historyenergy := agent.energyHistory[otherAgent.GetID()]
+			lastEnergy := 1.0
+			if len(historyenergy) >= 2 {
+				lastEnergy = historyenergy[len(historyenergy)-2]
+				// rest of your code
+			} else {
+				lastEnergy = 0.0
+			}
 			energyLevel := otherAgent.GetEnergyLevel()
-			ReputationForces := float64(forces.Pedal+forces.Brake+rand.Float64()) / energyLevel //CAUTION: REMOVE THE RANDOM VALUE
-			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Forces:", ReputationForces)
+			ReputationEnergy := float64((lastEnergy)) / energyLevel //CAUTION: REMOVE THE RANDOM VALUE
+			//print("我是大猴子")
+			//fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Forces:", ReputationEnergy)
 
 			// Monitor otherAgent's bike status
 			bikeStatus := otherAgent.GetBikeStatus()
@@ -559,19 +567,19 @@ func (agent *BaselineAgent) CalculateReputation() {
 			if bikeStatus {
 				ReputationBikeShift = 1.0
 			}
-			// fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Bike_Shift", float64(ReputationBikeShift))
+			//fmt.Println("Agent ID:", otherAgent.GetID(), "Reputation_Bike_Shift", float64(ReputationBikeShift))
 
 			// Calculate Overall_reputation
-			OverallReputation := ReputationForces * ReputationBikeShift
-			// fmt.Println("Agent ID:", otherAgent.GetID(), "Overall Reputation:", OverallReputation)
+			OverallReputation := ReputationEnergy * ReputationBikeShift
+			//fmt.Println("Agent ID:", otherAgent.GetID(), "Overall Reputation:", OverallReputation)
 
 			// Store Overall_reputation in the reputation map
 			agent.reputation[otherAgent.GetID()] = OverallReputation
 		}
 	}
-	// for agentID, agentReputation := range agent.reputation {
-	// 	print("Agent ID: ", agentID.String(), ", Reputation: ", agentReputation, "\n")
-	// }
+	 for agentID, agentReputation := range agent.reputation {
+	 	print("Agent ID: ", agentID.String(), ", Reputation: ", agentReputation, "\n")
+	 }
 }
 
 func (agent *BaselineAgent) CalculateHonestyMatrix() {
