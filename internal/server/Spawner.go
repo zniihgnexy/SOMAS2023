@@ -33,22 +33,13 @@ var AgentInitFunctions = []AgentInitFunction{
 }
 
 func GetAgentGenerators() []baseserver.AgentGeneratorCountPair[objects.IBaseBiker] {
-	agentGenerators := make([]baseserver.AgentGeneratorCountPair[objects.IBaseBiker], 0, len(AgentInitFunctions))
-	for _, initFunction := range AgentInitFunctions {
-		agentGenerators = append(agentGenerators, baseserver.MakeAgentGeneratorCountPair(BikerAgentGenerator(initFunction), BikerAgentCount/len(AgentInitFunctions)))
+	return []baseserver.AgentGeneratorCountPair[objects.IBaseBiker]{
+		baseserver.MakeAgentGeneratorCountPair[objects.IBaseBiker](BikerAgentGenerator, BikerAgentCount),
 	}
-	return agentGenerators
 }
 
-func BikerAgentGenerator(initFunc func(baseBiker *objects.BaseBiker) objects.IBaseBiker) func() objects.IBaseBiker {
-	return func() objects.IBaseBiker {
-		baseBiker := objects.GetBaseBiker(utils.GenerateRandomColour(), uuid.New())
-		if initFunc == nil {
-			return baseBiker
-		} else {
-			return initFunc(baseBiker)
-		}
-	}
+func BikerAgentGenerator() objects.IBaseBiker {
+	return objects.GetIBaseBiker(utils.GenerateRandomColour(), uuid.New())
 }
 
 func (s *Server) spawnLootBox() {
