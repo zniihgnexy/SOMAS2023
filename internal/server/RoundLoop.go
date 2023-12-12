@@ -134,7 +134,7 @@ func (s *Server) HandleKickoutProcess() []uuid.UUID {
 			leaderKickedOut := false
 			allKicked = append(allKicked, agentsVotes...)
 			for _, agentID := range agentsVotes {
-				fmt.Printf("kicking out agent %s\n", agentID)
+				// fmt.Printf("kicking out agent %s\n", agentID)
 				s.RemoveAgentFromBike(s.GetAgentMap()[agentID])
 				// if the leader was kicked out vote for a new one
 				if agentID == bike.GetRuler() {
@@ -353,16 +353,16 @@ func (s *Server) GetWinningDirection(finalVotes map[uuid.UUID]voting.LootboxVote
 
 func (s *Server) AudiCollisionCheck() {
 	// Check collision for audi with any megaBike
-	for bikeid, megabike := range s.GetMegaBikes() {
+	for _, megabike := range s.GetMegaBikes() {
 		if s.audi.CheckForCollision(megabike) {
 			// Collision detected
-			fmt.Printf("Collision detected between Audi and MegaBike %s \n", bikeid)
+			// fmt.Printf("Collision detected between Audi and MegaBike %s \n", bikeid)
 			for _, agentToDelete := range megabike.GetAgents() {
-				fmt.Printf("Agent %s killed by Audi \n", agentToDelete.GetID())
+				// fmt.Printf("Agent %s killed by Audi \n", agentToDelete.GetID())
 				s.RemoveAgent(agentToDelete)
 			}
 			if utils.AudiRemovesMegaBike {
-				fmt.Printf("Megabike %s removed by Audi \n", megabike.GetID())
+				// fmt.Printf("Megabike %s removed by Audi \n", megabike.GetID())
 				delete(s.megaBikes, megabike.GetID())
 			}
 		}
@@ -480,9 +480,9 @@ func (s *Server) SetDestinationBikes() {
 }
 
 func (s *Server) unaliveAgents() {
-	for id, agent := range s.GetAgentMap() {
+	for _, agent := range s.GetAgentMap() {
 		if agent.GetEnergyLevel() < 0 {
-			fmt.Printf("Agent %s got game ended\n", id)
+			// fmt.Printf("Agent %s got game ended\n", id)
 			//s.deadAgents[agent.GetID()] = agent
 			s.RemoveAgent(agent)
 		}

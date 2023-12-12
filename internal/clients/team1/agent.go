@@ -6,7 +6,6 @@ import (
 	obj "SOMAS2023/internal/common/objects"
 	utils "SOMAS2023/internal/common/utils"
 	voting "SOMAS2023/internal/common/voting"
-	"fmt"
 	"math"
 
 	"github.com/google/uuid"
@@ -240,7 +239,7 @@ func (bb *Biker1) ChangeBike() uuid.UUID {
 	}
 	if !bb.prevOnBike {
 		bb.timeInLimbo++
-		fmt.Printf("Agent %v is in limbo for %v rounds\n", bb.GetID(), bb.timeInLimbo)
+		// fmt.Printf("Agent %v is in limbo for %v rounds\n", bb.GetID(), bb.timeInLimbo)
 		bb.pursuedBikes = append(bb.pursuedBikes, bb.desiredBike)
 	}
 	return bb.desiredBike
@@ -338,7 +337,7 @@ func (bb *Biker1) VoteForKickout() map[uuid.UUID]int {
 
 // -------------------INSTANTIATION FUNCTIONS----------------------------
 func GetBiker1(baseBiker *obj.BaseBiker) obj.IBaseBiker {
-	fmt.Printf("Creating Biker1 with id %v\n", baseBiker.GetID())
+	// fmt.Printf("Creating Biker1 with id %v\n", baseBiker.GetID())
 	baseBiker.GroupID = 1
 	return &Biker1{
 		BaseBiker:      baseBiker,

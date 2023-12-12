@@ -3,7 +3,6 @@ package team4
 import (
 	"SOMAS2023/internal/common/objects"
 	"SOMAS2023/internal/common/utils"
-	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -152,6 +151,8 @@ func (agent *BaselineAgent) getHonestyAverage() float64 {
 }
 
 // //////////////////////////// DISPLAY FUNCTIONS ////////////////////////////////////////
+
+/*
 func (agent *BaselineAgent) DisplayFellowsEnergyHistory() {
 	fellowBikers := agent.GetFellowBikers()
 	for _, fellow := range fellowBikers {
@@ -162,6 +163,9 @@ func (agent *BaselineAgent) DisplayFellowsEnergyHistory() {
 		fmt.Println("")
 	}
 }
+*/
+
+/*
 func (agent *BaselineAgent) DisplayFellowsHonesty() {
 	fellowBikers := agent.GetFellowBikers()
 	for _, fellow := range fellowBikers {
@@ -172,6 +176,9 @@ func (agent *BaselineAgent) DisplayFellowsHonesty() {
 		fmt.Println("")
 	}
 }
+*/
+
+/*
 func (agent *BaselineAgent) DisplayFellowsReputation() {
 	fellowBikers := agent.GetFellowBikers()
 	for _, fellow := range fellowBikers {
@@ -182,3 +189,4 @@ func (agent *BaselineAgent) DisplayFellowsReputation() {
 		fmt.Println("")
 	}
 }
+*/

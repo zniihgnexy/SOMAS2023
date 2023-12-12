@@ -273,7 +273,7 @@ func (agent *BaselineAgent) VoteDictator() voting.IdVoteMap {
 }
 
 func (agent *BaselineAgent) DecideKickOut() []uuid.UUID {
-	//mt.Println("Decide Kickout")
+	//fmt.Println("Decide Kickout")
 	kickoutResults := make([]uuid.UUID, 0)
 	agent.UpdateDecisionData()
 
